@@ -1,0 +1,54 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Fuentes Corporativas (Usando fallbacks de Google Fonts) */
+  --font-sans: "Nunito", sans-serif;
+  --font-secondary: "Montserrat", sans-serif;
+  --font-display: "Caveat", cursive;
+
+  /* Colores Corporativos Principales */
+  --color-cosechas-rojo: #ed1650;
+  --color-cosechas-verde: #9eca3a;
+
+  /* Colores Asociados */
+  --color-cosechas-naranja1: #f68b1e;
+  --color-cosechas-naranja2: #faa918;
+  --color-cosechas-amarillo: #ffee00;
+  --color-cosechas-verde-alt: #23b24a;
+  --color-cosechas-magenta: #bb4699;
+  --color-cosechas-rosa: #d02c74;
+  --color-cosechas-purpura: #6d236a;
+
+  /* Colores Neutros y de Enlace */
+  --color-cosechas-blanco: #ffffff;
+  --color-cosechas-gris: #e6e6e5;
+
+  /* Colores Estructurales para Modo Oscuro y Claro */
+  --color-dark-bg: #0b1120;
+  --color-dark-surface: #172554; /* Un azul muy oscuro pero elegante */
+  --color-dark-surface-alt: #1e3a8a;
+  --color-dark-border: #1e293b;
+}
+
+@layer base {
+  body {
+    @apply font-sans bg-gray-50 text-gray-900 transition-colors duration-300;
+  }
+  .dark body {
+    @apply bg-dark-bg text-gray-100;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-sans font-bold tracking-tight;
+  }
+}
+
+@layer utilities {
+  .hide-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
+}
