@@ -37,6 +37,8 @@ const FORM_SECTIONS = {
         { name: 'pdv_departamento', label: 'Departamento', required: true, type: 'departamento' },
         { name: 'pdv_ciudad', label: 'Ciudad', required: true, type: 'ciudad' },
         { name: 'pdv_cc_mall_calle', label: 'CC / Mall / Calle' },
+        { name: 'latitud', label: 'Latitud', type: 'number', step: 'any' },
+        { name: 'longitud', label: 'Longitud', type: 'number', step: 'any' },
         { name: 'pdv_burbuja_local', label: 'Burbuja / Local', type: 'select', options: ['Burbuja', 'Local', 'N/A'] },
         { name: 'pdv_horario', label: 'Horario', placeholder: 'Ej: L-V 8am a 6pm', allowNA: true },
         { name: 'pdv_nueva_imagen', label: 'Nueva Imagen', type: 'select', options: ['Sí', 'No', 'Próximo'] },
@@ -78,7 +80,9 @@ const FORM_SECTIONS = {
     "Software": [
         { name: 'software_tipo', label: 'Tipo de Software', required: true, type: 'select', options: ['En Linea', 'Sin Software', 'Sin Internet', 'Cerró', 'Chily Sistem', 'Mekano', 'Suspendido'] },
         { name: 'software_observacion', label: 'Observación Software' },
-        { name: 'software_contrato_legalizado', label: 'Contrato Software Legalizado', type: 'select', options: ['Si', 'No'] }
+        { name: 'software_contrato_legalizado', label: 'Contrato Software Legalizado', type: 'select', options: ['Si', 'No'] },
+        { name: 'software_inicio_certificado', label: 'Inicio Certificado Digital', type: 'date' },
+        { name: 'software_vencimiento_certificado', label: 'Vencimiento Certificado Digital', type: 'date' }
     ],
     "Póliza": [
         { name: 'poliza_corredor', label: 'Corredor de Seguros', required: true },
@@ -98,6 +102,43 @@ const SedesTable = ({ sedes, cargarSedes, rolUsuario }) => {
 
     const [modalAbierto, setModalAbierto] = useState(false);
     const [alertaBorrador, setAlertaBorrador] = useState(false);
+    const [buscandoCoords, setBuscandoCoords] = useState(false);
+    const autocompletarCoordenadas = async () => {
+        const direccion = sedeActiva?.pdv_direccion;
+        const ciudad = sedeActiva?.pdv_ciudad;
+        if (!direccion || !ciudad) {
+            toast.error('Por favor ingresa la Dirección y la Ciudad primero.');
+            return;
+        }
+
+        setBuscandoCoords(true);
+        const toastId = toast.loading('Calculando coordenadas automáticamente...');
+        
+        try {
+            const query = `${direccion}, ${ciudad}, Colombia`;
+            // Usamos ArcGIS (Esri) que es el mejor geocodificador para Colombia (Gratis para uso no masivo)
+            const response = await fetch(`https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?f=json&maxLocations=1&singleLine=${encodeURIComponent(query)}`);
+            const data = await response.json();
+
+            if (data && data.candidates && data.candidates.length > 0) {
+                const lon = data.candidates[0].location.x;
+                const lat = data.candidates[0].location.y;
+                setSedeActiva(prev => ({
+                    ...prev,
+                    latitud: parseFloat(lat),
+                    longitud: parseFloat(lon)
+                }));
+                toast.success('Coordenadas detectadas y aplicadas', { id: toastId });
+            } else {
+                toast.error('No se encontraron coordenadas exactas. Intenta simplificar la dirección.', { id: toastId });
+            }
+        } catch (error) {
+            toast.error('Error al contactar el servicio de mapas', { id: toastId });
+            console.error('Error al autocompletar', error);
+        } finally {
+            setBuscandoCoords(false);
+        }
+    };
     const [modoModal, setModoModal] = useState('ver');
     const [sedeActiva, setSedeActiva] = useState(null);
     const [guardando, setGuardando] = useState(false);
@@ -144,6 +185,43 @@ const SedesTable = ({ sedes, cargarSedes, rolUsuario }) => {
                         tipo,
                         mensaje,
                         fechaFin
+                    });
+                }
+            }
+
+            // Alerta de certificado digital
+            const { software_vencimiento_certificado } = sede;
+            if (software_vencimiento_certificado) {
+                // Agregar sufijo 'T00:00:00' para evitar problemas de zona horaria si la fecha viene limpia
+                const fechaStr = software_vencimiento_certificado.includes('T') ? software_vencimiento_certificado : `${software_vencimiento_certificado}T00:00:00`;
+                const fechaVencimiento = new Date(fechaStr);
+                const msPorDia = 1000 * 60 * 60 * 24;
+                // Calculamos diferencia entre fechas (ignorando horas)
+                const hoyNormalizado = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+                const vencimientoNormalizado = new Date(fechaVencimiento.getFullYear(), fechaVencimiento.getMonth(), fechaVencimiento.getDate());
+                const diasRestantes = Math.ceil((vencimientoNormalizado - hoyNormalizado) / msPorDia);
+
+                if (diasRestantes <= 10) {
+                    let tipo = 'aviso';
+                    let mensaje = '';
+
+                    if (diasRestantes < 0) {
+                        tipo = 'vencido';
+                        mensaje = `Certificado digital vencido hace ${Math.abs(diasRestantes)} días`;
+                    } else if (diasRestantes === 0) {
+                        tipo = 'vencido';
+                        mensaje = `Certificado digital vence HOY`;
+                    } else {
+                        tipo = 'preaviso';
+                        mensaje = `Certificado digital vence en ${diasRestantes} días`;
+                    }
+
+                    alertas.push({
+                        id: `${sede.id}-cert`,
+                        nombre: sede.ceco_nombre || sede.tercero_razon_social || 'Sede sin nombre',
+                        tipo,
+                        mensaje,
+                        fechaFin: fechaVencimiento
                     });
                 }
             }
@@ -451,8 +529,8 @@ const SedesTable = ({ sedes, cargarSedes, rolUsuario }) => {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col xl:flex-row justify-between gap-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl p-4 rounded-2xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 relative z-[60] overflow-x-auto hide-scrollbar">
-                <div className="flex flex-nowrap gap-4 items-center">
+            <div className="flex flex-col xl:flex-row justify-between gap-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl p-4 rounded-2xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 relative z-[60]">
+                <div className="flex flex-wrap sm:flex-nowrap gap-4 items-center w-full xl:w-auto">
                     <div className="relative w-full sm:w-64 shrink-0">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         <input
@@ -465,7 +543,7 @@ const SedesTable = ({ sedes, cargarSedes, rolUsuario }) => {
                     </div>
 
                     {!['montajes', 'espectador_sedes'].includes(rolUsuario) && (
-                        <select 
+                        <select
                             value={columnFilters.find(f => f.id === 'pdv_estado')?.value || ''}
                             onChange={e => {
                                 const val = e.target.value;
@@ -488,7 +566,7 @@ const SedesTable = ({ sedes, cargarSedes, rolUsuario }) => {
                         </select>
                     )}
 
-                    <button 
+                    <button
                         onClick={handleExportar}
                         className="flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 border border-emerald-200 dark:border-emerald-800 rounded-xl text-sm font-bold transition-all shadow-sm whitespace-nowrap shrink-0"
                     >
@@ -706,8 +784,18 @@ const SedesTable = ({ sedes, cargarSedes, rolUsuario }) => {
                                 {/* Formulario */}
                                 <div className="flex-1 overflow-y-auto p-8 bg-white dark:bg-slate-800">
                                     <form id="sede-form" noValidate onSubmit={guardarSede}>
-                                        <h4 className="text-lg font-bold text-slate-800 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700 pb-3 mb-6">
-                                            {seccionActiva}
+                                        <h4 className="text-lg font-bold text-slate-800 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700 pb-3 mb-6 flex justify-between items-center">
+                                            <span>{seccionActiva}</span>
+                                            {seccionActiva === 'Punto de Venta' && modoModal !== 'ver' && (
+                                                <button 
+                                                    type="button" 
+                                                    onClick={() => autocompletarCoordenadas(sedeActiva?.pdv_direccion, sedeActiva?.pdv_ciudad)} 
+                                                    disabled={buscandoCoords}
+                                                    className="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg text-sm font-bold flex items-center gap-1 transition-colors disabled:opacity-50"
+                                                >
+                                                    <MapPin className="w-4 h-4" /> {buscandoCoords ? 'Buscando...' : 'Autocompletar Coordenadas'}
+                                                </button>
+                                            )}
                                         </h4>
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

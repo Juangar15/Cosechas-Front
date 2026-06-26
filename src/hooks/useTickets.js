@@ -19,6 +19,7 @@ export const useTickets = (session) => {
   const [tipoReporte, setTipoReporte] = useState('');
   const [motivo, setMotivo] = useState('');
   const [categoria, setCategoria] = useState('');
+  const [orden, setOrden] = useState('desc');
 
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
@@ -33,13 +34,13 @@ export const useTickets = (session) => {
   // Trampa 3: Reiniciar a la página 1 (index 0) al cambiar filtros o el tamaño de la página
   useEffect(() => {
     setPage(0);
-  }, [debouncedSearch, estado, pageSize, fechaInicio, fechaFin, tipoReporte, motivo, categoria]);
+  }, [debouncedSearch, estado, pageSize, fechaInicio, fechaFin, tipoReporte, motivo, categoria, orden]);
 
   const cargarTickets = async (mostrarToast = false) => {
     try {
       setCargando(true);
       // Backend espera páginas base 1, por lo que enviamos page + 1
-      const res = await fetchTickets(page + 1, pageSize, debouncedSearch, estado, fechaInicio, fechaFin, tipoReporte, motivo, categoria);
+      const res = await fetchTickets(page + 1, pageSize, debouncedSearch, estado, fechaInicio, fechaFin, tipoReporte, motivo, categoria, orden);
       setTickets(res.data || []);
       setTotal(res.total || 0);
       if (mostrarToast) toast.success('Datos actualizados correctamente.');
@@ -68,7 +69,7 @@ export const useTickets = (session) => {
       };
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session, page, pageSize, debouncedSearch, estado, fechaInicio, fechaFin, tipoReporte, motivo, categoria]);
+  }, [session, page, pageSize, debouncedSearch, estado, fechaInicio, fechaFin, tipoReporte, motivo, categoria, orden]);
 
   const handleCambiarEstado = async (ticketId, nuevoEstado, notaResolucion = null) => {
     const toastId = toast.loading(`Actualizando a ${nuevoEstado}...`);
@@ -89,9 +90,9 @@ export const useTickets = (session) => {
   return { 
     tickets, total, cargando, 
     page, pageSize, search, estado, 
-    fechaInicio, fechaFin, tipoReporte, motivo, categoria,
+    fechaInicio, fechaFin, tipoReporte, motivo, categoria, orden,
     setPage, setPageSize, setSearch, setEstado, 
-    setFechaInicio, setFechaFin, setTipoReporte, setMotivo, setCategoria,
+    setFechaInicio, setFechaFin, setTipoReporte, setMotivo, setCategoria, setOrden,
     cargarTickets, handleCambiarEstado 
   };
 };

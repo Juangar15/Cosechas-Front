@@ -26,7 +26,7 @@ axios.interceptors.response.use(
     }
 );
 
-export const fetchTickets = async (page = 1, pageSize = 10, search = '', estado = '', fechaInicio = '', fechaFin = '', tipoReporte = '', motivo = '', categoria = '') => {
+export const fetchTickets = async (page = 1, pageSize = 10, search = '', estado = '', fechaInicio = '', fechaFin = '', tipoReporte = '', motivo = '', categoria = '', orden = 'desc') => {
   const params = new URLSearchParams({ page, page_size: pageSize });
   if (search) params.append('search', search);
   if (estado) params.append('estado', estado);
@@ -35,6 +35,7 @@ export const fetchTickets = async (page = 1, pageSize = 10, search = '', estado 
   if (tipoReporte) params.append('tipo_reporte', tipoReporte);
   if (motivo) params.append('motivo', motivo);
   if (categoria) params.append('categoria', categoria);
+  if (orden) params.append('orden', orden);
   const respuesta = await axios.get(`${API_URL}/tickets?${params.toString()}`);
   return respuesta.data;
 };
@@ -49,12 +50,13 @@ export const updateTicketStatus = async (ticketId, nuevoEstado, notaResolucion =
 };
 
 // --- NUEVAS PETICIONES PARA FRANQUICIAS (CRM) ---
-export const fetchFranquicias = async (page = 1, pageSize = 10, search = '', estado = '', fechaInicio = '', fechaFin = '') => {
+export const fetchFranquicias = async (page = 1, pageSize = 10, search = '', estado = '', fechaInicio = '', fechaFin = '', orden = 'desc') => {
   const params = new URLSearchParams({ page, page_size: pageSize });
   if (search) params.append('search', search);
   if (estado) params.append('estado', estado);
   if (fechaInicio) params.append('fecha_inicio', fechaInicio);
   if (fechaFin) params.append('fecha_fin', fechaFin);
+  if (orden) params.append('orden', orden);
   const respuesta = await axios.get(`${API_URL}/franquicias/solicitudes?${params.toString()}`);
   return respuesta.data;
 };
@@ -86,18 +88,27 @@ export const fetchUserRole = async (email) => {
 };
 
 // --- NUEVAS PETICIONES PARA ANALÍTICAS ---
-export const fetchAnalyticsPQRS = async (periodo) => {
-  const respuesta = await axios.get(`${API_URL}/analytics/pqrs?periodo=${periodo}`);
+export const fetchAnalyticsPQRS = async (periodo, fechaInicio, fechaFin) => {
+  const params = new URLSearchParams({ periodo });
+  if (fechaInicio) params.append('fecha_inicio', fechaInicio);
+  if (fechaFin) params.append('fecha_fin', fechaFin);
+  const respuesta = await axios.get(`${API_URL}/analytics/pqrs?${params.toString()}`);
   return respuesta.data;
 };
 
-export const fetchAnalyticsPQRSMensual = async () => {
-  const respuesta = await axios.get(`${API_URL}/analytics/pqrs/mensual`);
+export const fetchAnalyticsPQRSMensual = async (periodo, fechaInicio, fechaFin) => {
+  const params = new URLSearchParams({ periodo: periodo || 'historico' });
+  if (fechaInicio) params.append('fecha_inicio', fechaInicio);
+  if (fechaFin) params.append('fecha_fin', fechaFin);
+  const respuesta = await axios.get(`${API_URL}/analytics/pqrs/mensual?${params.toString()}`);
   return respuesta.data;
 };
 
-export const fetchAnalyticsPQRSSedes = async (periodo) => {
-  const respuesta = await axios.get(`${API_URL}/analytics/pqrs/sedes?periodo=${periodo}`);
+export const fetchAnalyticsPQRSSedes = async (periodo, fechaInicio, fechaFin) => {
+  const params = new URLSearchParams({ periodo });
+  if (fechaInicio) params.append('fecha_inicio', fechaInicio);
+  if (fechaFin) params.append('fecha_fin', fechaFin);
+  const respuesta = await axios.get(`${API_URL}/analytics/pqrs/sedes?${params.toString()}`);
   return respuesta.data;
 };
 
@@ -106,12 +117,26 @@ export const fetchAnalyticsSedesImagen = async () => {
   return respuesta.data;
 };
 
-export const fetchAnalyticsFranquicias = async (periodo) => {
-  const respuesta = await axios.get(`${API_URL}/analytics/franquicias?periodo=${periodo}`);
+export const fetchAnalyticsFranquicias = async (periodo, fechaInicio, fechaFin) => {
+  const params = new URLSearchParams({ periodo });
+  if (fechaInicio) params.append('fecha_inicio', fechaInicio);
+  if (fechaFin) params.append('fecha_fin', fechaFin);
+  const respuesta = await axios.get(`${API_URL}/analytics/franquicias?${params.toString()}`);
   return respuesta.data;
 };
 
-export const fetchAnalyticsDomicilios = async (periodo) => {
-  const respuesta = await axios.get(`${API_URL}/analytics/domicilios?periodo=${periodo}`);
+export const fetchAnalyticsDomicilios = async (periodo, fechaInicio, fechaFin) => {
+  const params = new URLSearchParams({ periodo });
+  if (fechaInicio) params.append('fecha_inicio', fechaInicio);
+  if (fechaFin) params.append('fecha_fin', fechaFin);
+  const respuesta = await axios.get(`${API_URL}/analytics/domicilios?${params.toString()}`);
+  return respuesta.data;
+};
+
+export const fetchAnalyticsCandidatos = async (periodo, fechaInicio, fechaFin) => {
+  const params = new URLSearchParams({ periodo });
+  if (fechaInicio) params.append('fecha_inicio', fechaInicio);
+  if (fechaFin) params.append('fecha_fin', fechaFin);
+  const respuesta = await axios.get(`${API_URL}/analytics/candidatos?${params.toString()}`);
   return respuesta.data;
 };

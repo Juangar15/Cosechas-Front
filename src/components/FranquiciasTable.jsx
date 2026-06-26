@@ -23,7 +23,7 @@ const calcularSLA = (fechaCreacion, estado) => {
   }
 };
 
-const FranquiciasTable = ({ franquicias, cargando, total, page, pageSize, search, estado, fechaInicio, fechaFin, setPage, setPageSize, setSearch, setEstado, setFechaInicio, setFechaFin, handleCambiarEstado }) => {
+const FranquiciasTable = ({ franquicias, cargando, total, page, pageSize, search, estado, fechaInicio, fechaFin, orden, setPage, setPageSize, setSearch, setEstado, setFechaInicio, setFechaFin, setOrden, handleCambiarEstado }) => {
     const [ticketAResolver, setTicketAResolver] = useState(null);
     const [mostrarFiltrosAvanzados, setMostrarFiltrosAvanzados] = useState(false);
     const [exportando, setExportando] = useState(false);
@@ -75,10 +75,15 @@ const FranquiciasTable = ({ franquicias, cargando, total, page, pageSize, search
                 ID: lead.id,
                 'Fecha Creación': new Date(lead.fecha_creacion).toLocaleString(),
                 Estado: lead.estado,
+                'Tipo Lead': lead.tipo_lead || 'N/A',
+                'Nombre': lead.nombre || 'N/A',
                 'Celular': lead.celular,
-                'Dirección Local': lead.direccion_local || 'N/A',
-                Ciudad: lead.ciudad || 'N/A',
-                Dudas: lead.dudas,
+                'Correo': lead.correo || 'N/A',
+                'Ciudad': lead.ciudad || 'N/A',
+                'Local': lead.local_identificado || 'N/A',
+                'Involucramiento': lead.involucramiento || 'N/A',
+                'Capital': lead.inversion_capital || 'N/A',
+                'Agendamiento': lead.estado_agendamiento || 'N/A',
                 'Nota Resolución': lead.nota_resolucion || 'N/A'
             }));
             
@@ -100,56 +105,83 @@ const FranquiciasTable = ({ franquicias, cargando, total, page, pageSize, search
         },
         {
             accessorKey: 'celular',
-            header: 'Celular Prospecto',
+            header: 'Contacto Prospecto',
             cell: ({ row }) => {
                 const celular = row.original.celular;
+                const nombre = row.original.nombre || 'Sin nombre';
+                const correo = row.original.correo || 'Sin correo';
                 const celularLimpio = celular ? celular.replace(/\D/g, '') : '';
                 return (
-                    <div className="flex items-center gap-2">
-                        <span className="font-bold text-cosechas-verde dark:text-emerald-400">{celular}</span>
-                        {celularLimpio && (
-                            <a
-                                href={`https://wa.me/${celularLimpio}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="p-1.5 bg-cosechas-verde/10 text-cosechas-verde hover:bg-cosechas-verde hover:text-white rounded-lg transition-colors border border-cosechas-verde/20"
-                                title="Contactar por WhatsApp"
-                            >
-                                <MessageCircle className="w-4 h-4" />
-                            </a>
-                        )}
+                    <div className="flex flex-col gap-1 min-w-[150px]">
+                        <span className="font-bold text-slate-800 dark:text-slate-200 text-sm leading-tight">{nombre}</span>
+                        <div className="flex items-center gap-2">
+                            <span className="font-semibold text-cosechas-verde dark:text-emerald-400 text-xs">{celular}</span>
+                            {celularLimpio && (
+                                <a
+                                    href={`https://wa.me/${celularLimpio}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="p-1 bg-cosechas-verde/10 text-cosechas-verde hover:bg-cosechas-verde hover:text-white rounded-md transition-colors border border-cosechas-verde/20"
+                                    title="Contactar por WhatsApp"
+                                >
+                                    <MessageCircle className="w-3 h-3" />
+                                </a>
+                            )}
+                        </div>
+                        {correo !== 'Sin correo' && <span className="text-xs text-slate-500 dark:text-slate-400 break-all">{correo}</span>}
                     </div>
                 );
             }
         },
         {
-            accessorKey: 'direccion_local',
-            header: 'Ubicación y Local',
+            accessorKey: 'perfil',
+            header: 'Perfil del Inversor',
             cell: ({ row }) => {
-                const direccion = row.original.direccion_local;
                 const ciudad = row.original.ciudad;
+                const local = row.original.local_identificado;
+                const inv = row.original.inversion_capital;
+                const rol = row.original.involucramiento;
                 return (
-                    <div className="flex flex-col min-w-[150px]">
+                    <div className="flex flex-col min-w-[150px] gap-1">
                         {ciudad && ciudad !== 'No especificada' && (
-                            <span className="text-[10px] font-bold text-cosechas-rojo uppercase tracking-widest mb-1 opacity-80">
+                            <span className="text-[10px] font-bold text-cosechas-rojo uppercase tracking-widest opacity-80">
                                 📍 {ciudad}
                             </span>
                         )}
-                        <span className="font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2 text-sm">
-                            <Store className="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" /> {direccion}
+                        <span className="text-xs text-slate-600 dark:text-slate-300">
+                            <strong>Capital:</strong> {inv}
+                        </span>
+                        <span className="text-xs text-slate-600 dark:text-slate-300">
+                            <strong>Local:</strong> {local}
+                        </span>
+                        <span className="text-xs text-slate-600 dark:text-slate-300">
+                            <strong>Rol:</strong> {rol}
                         </span>
                     </div>
                 );
             }
         },
         {
-            accessorKey: 'dudas',
-            header: 'Inquietudes',
-            cell: info => (
-                <p className="line-clamp-2 text-slate-500 dark:text-slate-400 leading-relaxed max-w-[200px] text-xs italic" title={info.getValue()}>
-                    "{info.getValue()}"
-                </p>
-            )
+            accessorKey: 'tipo_lead',
+            header: 'Tipo Lead',
+            cell: ({ row }) => {
+                const tipo = row.original.tipo_lead || 'C';
+                const agendado = row.original.estado_agendamiento || 'No aplica';
+                let colorClass = "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700";
+                if (tipo === 'A') colorClass = "bg-red-50 text-red-600 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800/30";
+                else if (tipo === 'B') colorClass = "bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800/30";
+                
+                return (
+                    <div className="flex flex-col items-start gap-1">
+                        <span className={`inline-flex items-center justify-center px-2.5 py-1 rounded-full text-[11px] font-bold border ${colorClass}`}>
+                            LEAD {tipo}
+                        </span>
+                        <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+                            🗓️ {agendado}
+                        </span>
+                    </div>
+                );
+            }
         },
         {
             id: 'sla',
@@ -274,6 +306,14 @@ const FranquiciasTable = ({ franquicias, cargando, total, page, pageSize, search
                             <option value="Pendiente">🔴 Pendientes</option>
                             <option value="Contactado">✅ Contactados</option>
                             <option value="Descartado">❌ Descartados</option>
+                        </select>
+                        <select
+                            value={orden}
+                            onChange={(e) => setOrden(e.target.value)}
+                            className="w-full sm:w-auto px-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-cosechas-verde/50 text-slate-700 dark:text-slate-200 cursor-pointer transition-all"
+                        >
+                            <option value="desc">Más Recientes</option>
+                            <option value="asc">Más Antiguos</option>
                         </select>
                         <button 
                             onClick={() => setMostrarFiltrosAvanzados(!mostrarFiltrosAvanzados)}

@@ -14,6 +14,7 @@ export const useFranquicias = (session) => {
     
     const [fechaInicio, setFechaInicio] = useState('');
     const [fechaFin, setFechaFin] = useState('');
+    const [orden, setOrden] = useState('desc');
 
     const [debouncedSearch, setDebouncedSearch] = useState('');
 
@@ -26,12 +27,12 @@ export const useFranquicias = (session) => {
 
     useEffect(() => {
         setPage(0);
-    }, [debouncedSearch, estado, pageSize, fechaInicio, fechaFin]);
+    }, [debouncedSearch, estado, pageSize, fechaInicio, fechaFin, orden]);
 
     const cargarFranquicias = async () => {
         try {
             setCargando(true);
-            const res = await fetchFranquicias(page + 1, pageSize, debouncedSearch, estado, fechaInicio, fechaFin);
+            const res = await fetchFranquicias(page + 1, pageSize, debouncedSearch, estado, fechaInicio, fechaFin, orden);
             setFranquicias(res.data || []);
             setTotal(res.total || 0);
         } catch (error) {
@@ -56,7 +57,7 @@ export const useFranquicias = (session) => {
             };
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [session, page, pageSize, debouncedSearch, estado, fechaInicio, fechaFin]);
+    }, [session, page, pageSize, debouncedSearch, estado, fechaInicio, fechaFin, orden]);
 
     const handleCambiarEstado = async (solicitudId, nuevoEstado, notaResolucion = null) => {
         try {
@@ -75,9 +76,9 @@ export const useFranquicias = (session) => {
     return { 
         franquicias, total, cargando, 
         page, pageSize, search, estado, 
-        fechaInicio, fechaFin,
+        fechaInicio, fechaFin, orden,
         setPage, setPageSize, setSearch, setEstado, 
-        setFechaInicio, setFechaFin,
+        setFechaInicio, setFechaFin, setOrden,
         cargarFranquicias, handleCambiarEstado 
     };
 };

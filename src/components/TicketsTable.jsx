@@ -29,7 +29,7 @@ const calcularSLA = (fechaCreacion, estado) => {
   }
 };
 
-const TicketsTable = ({ tickets, cargando, total, page, pageSize, search, estado, fechaInicio, fechaFin, tipoReporte, motivo, categoria, setPage, setPageSize, setSearch, setEstado, setFechaInicio, setFechaFin, setTipoReporte, setMotivo, setCategoria, handleCambiarEstado, setFotoModal, rolUsuario }) => {
+const TicketsTable = ({ tickets, cargando, total, page, pageSize, search, estado, fechaInicio, fechaFin, tipoReporte, motivo, categoria, orden, setPage, setPageSize, setSearch, setEstado, setFechaInicio, setFechaFin, setTipoReporte, setMotivo, setCategoria, setOrden, handleCambiarEstado, setFotoModal, rolUsuario }) => {
   const [ticketAResolver, setTicketAResolver] = useState(null);
   const [mostrarFiltrosAvanzados, setMostrarFiltrosAvanzados] = useState(false);
   const [exportando, setExportando] = useState(false);
@@ -87,6 +87,8 @@ const TicketsTable = ({ tickets, cargando, total, page, pageSize, search, estado
         Radicado: ticket.id || 'N/A',
         'Fecha Creación': new Date(ticket.fecha_creacion).toLocaleString(),
         Estado: ticket.estado,
+        'Nombre Cliente': ticket.nombre_cliente || 'N/A',
+        'Correo Cliente': ticket.correo_cliente || 'N/A',
         'Celular Cliente': ticket.celular_cliente,
         'Tipo Reporte': ticket.tipo_reporte || 'N/A',
         Motivo: ticket.motivo || 'N/A',
@@ -115,7 +117,18 @@ const TicketsTable = ({ tickets, cargando, total, page, pageSize, search, estado
     {
       accessorKey: 'celular_cliente',
       header: 'Contacto',
-      cell: info => <span className="font-semibold text-slate-700 dark:text-slate-200">{info.getValue()}</span>
+      cell: ({ row }) => {
+        const celular = row.original.celular_cliente;
+        const nombre = row.original.nombre_cliente || 'Sin nombre';
+        const correo = row.original.correo_cliente || 'Sin correo';
+        return (
+          <div className="flex flex-col gap-1 min-w-[140px]">
+            <span className="font-bold text-slate-800 dark:text-slate-200 text-sm leading-tight">{nombre}</span>
+            <span className="font-semibold text-cosechas-verde dark:text-emerald-400 text-xs">{celular}</span>
+            {correo !== 'Sin correo' && <span className="text-xs text-slate-500 dark:text-slate-400 break-all">{correo}</span>}
+          </div>
+        );
+      }
     },
     {
       id: 'franquicia',
@@ -305,6 +318,17 @@ const TicketsTable = ({ tickets, cargando, total, page, pageSize, search, estado
               <option value="En Proceso">🟡 En Proceso</option>
               <option value="Cerrado">🟢 Resueltos</option>
             </select>
+
+            {/* Filtro por Orden */}
+            <select
+              value={orden}
+              onChange={(e) => setOrden(e.target.value)}
+              className="w-full sm:w-auto pl-10 pr-8 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-cosechas-rojo/50 text-slate-700 dark:text-slate-200 cursor-pointer font-medium"
+            >
+              <option value="desc">Más Recientes</option>
+              <option value="asc">Más Antiguos</option>
+            </select>
+
             <button 
               onClick={() => setMostrarFiltrosAvanzados(!mostrarFiltrosAvanzados)}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all border ${mostrarFiltrosAvanzados ? 'bg-cosechas-rojo text-white border-cosechas-rojo shadow-md' : 'bg-slate-50 dark:bg-slate-900/50 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800'}`}

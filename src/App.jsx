@@ -43,7 +43,7 @@ function App() {
       setVistaActiva('pqrs');
     } else if (rolUsuario === 'especialista_leads') {
       setVistaActiva('franquicias');
-    } else if (rolUsuario === 'gerencia_juridica') {
+    } else if (['gerencia_juridica', 'gerente_talento_humano'].includes(rolUsuario)) {
       setVistaActiva('analytics');
     } else if (['abogado_sedes', 'espectador_sedes', 'montajes'].includes(rolUsuario)) {
       setVistaActiva('sedes');
@@ -154,7 +154,7 @@ function App() {
           )}
 
           {/* Pestaña ANALÍTICAS */}
-          {['admin', 'gerencia_juridica', 'montajes'].includes(rolUsuario) && (
+          {['admin', 'gerencia_juridica', 'montajes', 'gerente_talento_humano'].includes(rolUsuario) && (
             <button
               onClick={() => setVistaActiva('analytics')}
               className={`flex items-center whitespace-nowrap shrink-0 gap-2 px-4 md:px-6 py-3 font-bold text-sm rounded-t-xl transition-all font-sans ${vistaActiva === 'analytics'
@@ -196,6 +196,7 @@ function App() {
               tipoReporte={ticketsHook.tipoReporte}
               motivo={ticketsHook.motivo}
               categoria={ticketsHook.categoria}
+              orden={ticketsHook.orden}
               setPage={ticketsHook.setPage}
               setPageSize={ticketsHook.setPageSize}
               setSearch={ticketsHook.setSearch}
@@ -205,6 +206,7 @@ function App() {
               setTipoReporte={ticketsHook.setTipoReporte}
               setMotivo={ticketsHook.setMotivo}
               setCategoria={ticketsHook.setCategoria}
+              setOrden={ticketsHook.setOrden}
               handleCambiarEstado={ticketsHook.handleCambiarEstado} 
               setFotoModal={setFotoModal}
               rolUsuario={rolUsuario}
@@ -225,12 +227,14 @@ function App() {
               estado={franquiciasHook.estado}
               fechaInicio={franquiciasHook.fechaInicio}
               fechaFin={franquiciasHook.fechaFin}
+              orden={franquiciasHook.orden}
               setPage={franquiciasHook.setPage}
               setPageSize={franquiciasHook.setPageSize}
               setSearch={franquiciasHook.setSearch}
               setEstado={franquiciasHook.setEstado}
               setFechaInicio={franquiciasHook.setFechaInicio}
               setFechaFin={franquiciasHook.setFechaFin}
+              setOrden={franquiciasHook.setOrden}
               handleCambiarEstado={franquiciasHook.handleCambiarEstado} 
             />
         ) : vistaActiva === 'sedes' ? (
