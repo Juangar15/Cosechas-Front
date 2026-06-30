@@ -18,14 +18,25 @@ const calcularSLA = (fechaCreacion, estado) => {
 
   const creacion = new Date(fechaCreacion);
   const ahora = new Date();
-  const horasTranscurridas = Math.abs(ahora - creacion) / 36e5;
+  
+  let diasHabiles = 0;
+  let fechaIter = new Date(creacion);
+  
+  // Sumar días excluyendo fines de semana
+  while (fechaIter < ahora) {
+    const dia = fechaIter.getDay();
+    if (dia !== 0 && dia !== 6) { // 0=Domingo, 6=Sábado
+      diasHabiles++;
+    }
+    fechaIter.setDate(fechaIter.getDate() + 1);
+  }
 
-  if (horasTranscurridas > 48) {
-    return { color: 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800/30', texto: `+${Math.floor(horasTranscurridas)}h Vencido`, nivel: 3 };
-  } else if (horasTranscurridas > 24) {
-    return { color: 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800/30', texto: `${Math.floor(horasTranscurridas)}h Alerta`, nivel: 2 };
+  if (diasHabiles > 4) {
+    return { color: 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800/30', texto: `${diasHabiles}d Vencido`, nivel: 3 };
+  } else if (diasHabiles >= 3) {
+    return { color: 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800/30', texto: `${diasHabiles}d Alerta`, nivel: 2 };
   } else {
-    return { color: 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border-green-200 dark:border-green-800/30', texto: `${Math.floor(horasTranscurridas)}h OK`, nivel: 1 };
+    return { color: 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border-green-200 dark:border-green-800/30', texto: `${diasHabiles}d OK`, nivel: 1 };
   }
 };
 
