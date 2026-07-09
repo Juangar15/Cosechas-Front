@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, CheckCircle2, Search, ChevronLeft, ChevronRight, Store, MessageCircle, Filter, Clock, AlertTriangle, Download } from 'lucide-react';
+import { FileText, CheckCircle2, Search, ChevronLeft, ChevronRight, Store, MessageCircle, Filter, Clock, AlertTriangle, Download, Camera } from 'lucide-react';
 import { useReactTable, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, flexRender } from '@tanstack/react-table';
 import { exportarAExcel } from '../utils/exportExcel.js';
+import ImageModal from './ImageModal.jsx';
 import { fetchFranquicias } from '../services/api.js';
 
 const calcularSLA = (fechaCreacion, estado) => {
@@ -30,8 +31,7 @@ const FranquiciasTable = ({ franquicias, cargando, total, page, pageSize, search
     const [notaTexto, setNotaTexto] = useState('');
     const [nuevoEstadoPendiente, setNuevoEstadoPendiente] = useState('');
     const [notaVisible, setNotaVisible] = useState(null);
-
-
+    const [fotoModal, setFotoModal] = useState(null);
 
     const onSelectChange = (solicitudId, nuevoEstado) => {
         if (nuevoEstado === 'Contactado' || nuevoEstado === 'Descartado') {
@@ -75,16 +75,15 @@ const FranquiciasTable = ({ franquicias, cargando, total, page, pageSize, search
                 ID: lead.id,
                 'Fecha Creación': new Date(lead.fecha_creacion).toLocaleString(),
                 Estado: lead.estado,
-                'Tipo Lead': lead.tipo_lead || 'N/A',
+                'Tipo Franquicia': lead.tipo_franquicia || 'N/A',
                 'Nombre': lead.nombre || 'N/A',
                 'Celular': lead.celular,
                 'Correo': lead.correo || 'N/A',
                 'Ciudad': lead.ciudad || 'N/A',
-                'Local': lead.local_identificado || 'N/A',
+                'Local Identificado': lead.local_identificado || 'N/A',
+                'Dirección Local': lead.direccion_local || 'N/A',
                 'Involucramiento': lead.involucramiento || 'N/A',
-                'Capital': lead.inversion_capital || 'N/A',
-                'Agendamiento': lead.estado_agendamiento || 'N/A',
-                'Nota Resolución': lead.nota_resolucion || 'N/A'
+                'Nota Resolucion': lead.nota_resolucion || 'N/A'
             }));
             
             toast.success(`Se exportaron ${datosCompletos.length} prospectos.`, { id: toastId });
@@ -135,12 +134,14 @@ const FranquiciasTable = ({ franquicias, cargando, total, page, pageSize, search
         },
         {
             accessorKey: 'perfil',
-            header: 'Perfil del Inversor',
+            header: 'Detalles del Local',
             cell: ({ row }) => {
                 const ciudad = row.original.ciudad;
                 const local = row.original.local_identificado;
-                const inv = row.original.inversion_capital;
+                const direccion = row.original.direccion_local;
+                const foto = row.original.foto_local;
                 const rol = row.original.involucramiento;
+                
                 return (
                     <div className="flex flex-col min-w-[150px] gap-1">
                         {ciudad && ciudad !== 'No especificada' && (
@@ -149,35 +150,42 @@ const FranquiciasTable = ({ franquicias, cargando, total, page, pageSize, search
                             </span>
                         )}
                         <span className="text-xs text-slate-600 dark:text-slate-300">
-                            <strong>Capital:</strong> {inv}
-                        </span>
-                        <span className="text-xs text-slate-600 dark:text-slate-300">
                             <strong>Local:</strong> {local}
                         </span>
+                        {direccion && (
+                            <span className="text-xs text-slate-600 dark:text-slate-300 truncate" title={direccion}>
+                                <strong>Dir:</strong> {direccion}
+                            </span>
+                        )}
                         <span className="text-xs text-slate-600 dark:text-slate-300">
                             <strong>Rol:</strong> {rol}
                         </span>
+                        {foto && foto !== 'No adjuntó foto' && foto.startsWith('http') && (
+                            <button 
+                                onClick={() => setFotoModal(foto)}
+                                className="mt-1 flex items-center justify-center gap-1 text-[10px] bg-cosechas-verde/10 text-cosechas-verde hover:bg-cosechas-verde hover:text-white px-2 py-1 rounded transition-colors font-bold w-fit"
+                            >
+                                <Camera className="w-3 h-3" /> Ver Foto
+                            </button>
+                        )}
                     </div>
                 );
             }
         },
         {
-            accessorKey: 'tipo_lead',
-            header: 'Tipo Lead',
+            accessorKey: 'tipo_franquicia',
+            header: 'Interés',
             cell: ({ row }) => {
-                const tipo = row.original.tipo_lead || 'C';
-                const agendado = row.original.estado_agendamiento || 'No aplica';
+                const tipo = row.original.tipo_franquicia || 'No especificado';
                 let colorClass = "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700";
-                if (tipo === 'A') colorClass = "bg-red-50 text-red-600 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800/30";
-                else if (tipo === 'B') colorClass = "bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800/30";
+                
+                if (tipo.includes("Nueva")) colorClass = "bg-cosechas-verde/10 text-cosechas-verde border-cosechas-verde/30";
+                else if (tipo.includes("Operación") || tipo.includes("operacion")) colorClass = "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800/30";
                 
                 return (
                     <div className="flex flex-col items-start gap-1">
                         <span className={`inline-flex items-center justify-center px-2.5 py-1 rounded-full text-[11px] font-bold border ${colorClass}`}>
-                            LEAD {tipo}
-                        </span>
-                        <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
-                            🗓️ {agendado}
+                            {tipo.toUpperCase()}
                         </span>
                     </div>
                 );
@@ -544,6 +552,7 @@ const FranquiciasTable = ({ franquicias, cargando, total, page, pageSize, search
                     </motion.div>
                 )}
             </AnimatePresence>
+            <ImageModal fotoModal={fotoModal} setFotoModal={setFotoModal} />
         </div>
     );
 };
