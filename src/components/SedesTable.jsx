@@ -54,7 +54,7 @@ const FORM_SECTIONS = {
         { name: 'pdv_fecha_apertura', label: 'Fecha Apertura', required: true, type: 'date', allowNA: true },
         { name: 'pdv_fecha_cierre', label: 'Fecha Cierre', type: 'date', allowNA: true },
         { name: 'pdv_asesora_callcenter', label: 'Asesora Call Center', required: true, type: 'select', options: ['Karen Mahecha', 'Luisa Marin', 'Yeiner Andres Baloyes', '#N/D'] },
-        { name: 'pdv_aplicacion_rappi', label: 'Aplicación', required: true, type: 'select', options: ['Didi', 'Rappi', 'No'] }
+        { name: 'pdv_aplicacion_rappi', label: 'Aplicación', required: true, type: 'select', options: ['Didi', 'Rappi', 'Ambos', 'No'] }
     ],
     "Administrador": [
         { name: 'admin_nombre', label: 'Nombre Administrador', allowNA: true },
