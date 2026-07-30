@@ -42,6 +42,7 @@ const FORM_SECTIONS = {
         { name: 'pdv_burbuja_local', label: 'Burbuja / Local', type: 'select', options: ['Burbuja', 'Local', 'N/A'] },
         { name: 'pdv_horario', label: 'Horario', placeholder: 'Ej: L-V 8am a 6pm', allowNA: true },
         { name: 'pdv_nueva_imagen', label: 'Nueva Imagen', type: 'select', options: ['Sí', 'No', 'Próximo'] },
+        { name: 'pdv_color_imagen', label: 'Color Nueva Imagen', type: 'select', options: ['Roja', 'Café'], condition: { field: 'pdv_nueva_imagen', value: 'Sí' } },
         { name: 'pdv_tv', label: 'Tiene TV', type: 'select', options: ['Si', 'No'] },
         // Campos Condicionales de TV
         { name: 'pdv_tv_cantidad', label: 'Cantidad TV', type: 'select', options: ['1', '2'], condition: { field: 'pdv_tv', value: 'Si' } },
@@ -311,6 +312,11 @@ const SedesTable = ({ sedes, cargarSedes, rolUsuario }) => {
             if (name === 'pdv_tv' && formattedValue !== 'Si') {
                 newState.pdv_tv_cantidad = '';
                 newState.pdv_aplicacion = '';
+            }
+
+            // Lógica de limpieza si desmarcan Nueva Imagen
+            if (name === 'pdv_nueva_imagen' && formattedValue !== 'Sí') {
+                newState.pdv_color_imagen = '';
             }
 
             return newState;
