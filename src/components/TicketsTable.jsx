@@ -47,14 +47,11 @@ const TicketsTable = ({ tickets, cargando, total, page, pageSize, search, estado
   const [notaTexto, setNotaTexto] = useState('');
   const [notaVisible, setNotaVisible] = useState(null);
 
-  // Filtrar tickets si es gerencia jurídica
+  // Ya no filtramos tickets para gerencia jurídica, ven la tabla completa
   const ticketsProcesados = useMemo(() => {
     if (!tickets) return [];
-    if (rolUsuario === 'gerencia_juridica') {
-      return tickets.filter(t => t.tipo_novedad === 'Objeto en el producto' || t.motivo === 'Objeto en el producto');
-    }
     return tickets;
-  }, [tickets, rolUsuario]);
+  }, [tickets]);
 
   const onSelectChange = (ticketId, nuevoEstado) => {
     if (nuevoEstado === 'Cerrado') {

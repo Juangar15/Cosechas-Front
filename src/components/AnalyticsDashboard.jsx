@@ -11,6 +11,18 @@ import toast from 'react-hot-toast';
 
 const COLORS = ['#16a34a', '#15803d', '#14532d', '#22c55e', '#4ade80', '#86efac'];
 
+const getCustomColor = (name, index) => {
+    const colorMap = {
+        'Sí (Roja)': '#ef4444',   // Rojo para sedes rojas
+        'Sí (Café)': '#78350f',   // Café/Marrón para sedes café
+        'Sí (Otro)': '#10b981',   // Verde por defecto si hay otro "Sí"
+        'No': '#94a3b8',          // Gris para "No"
+        'Próximo': '#f59e0b',     // Amarillo/Naranja para "Próximo"
+        'Otro': '#cbd5e1'         // Gris claro para otros
+    };
+    return colorMap[name] || COLORS[index % COLORS.length];
+};
+
 const AnalyticsDashboard = ({ analyticsData, modoOscuro, rolUsuario }) => {
     const { periodo, setPeriodo, fechaInicio, setFechaInicio, fechaFin, setFechaFin, dataPqrs, dataPqrsMensual, dataPqrsSedes, dataSedesImagen, dataFranquicias, dataDomicilios, dataCandidatos, cargando } = analyticsData;
     const [filtroImagen, setFiltroImagen] = React.useState('');
@@ -109,25 +121,41 @@ const AnalyticsDashboard = ({ analyticsData, modoOscuro, rolUsuario }) => {
                         className="px-3 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-slate-700 dark:text-slate-200 cursor-pointer transition-all"
                     >
                         <option value="">Todas</option>
-                        <option value="Sí">Sí</option>
+                        <option value="Sí">Sí (Todas)</option>
+                        <option value="Sí (Roja)">Sí (Solo Roja)</option>
+                        <option value="Sí (Café)">Sí (Solo Café)</option>
                         <option value="No">No</option>
                         <option value="Próximo">Próximo</option>
                     </select>
                     <button
                         onClick={async () => {
-                            let query = supabase.from('sedes_oficiales').select('ceco_nombre, tercero_nit, tercero_razon_social, pdv_nueva_imagen').eq('pdv_estado', 'OPERANDO');
+                            let query = supabase.from('sedes_oficiales').select('ceco_nombre, tercero_nit, tercero_razon_social, pdv_nueva_imagen, pdv_color_imagen').eq('pdv_estado', 'OPERANDO');
                             if (filtroImagen) {
-                                query = query.eq('pdv_nueva_imagen', filtroImagen);
+                                if (filtroImagen === 'Sí (Roja)') {
+                                    query = query.eq('pdv_nueva_imagen', 'Sí').eq('pdv_color_imagen', 'Roja');
+                                } else if (filtroImagen === 'Sí (Café)') {
+                                    query = query.eq('pdv_nueva_imagen', 'Sí').in('pdv_color_imagen', ['Cafe', 'Café']);
+                                } else if (filtroImagen === 'Sí') {
+                                    query = query.eq('pdv_nueva_imagen', 'Sí');
+                                } else {
+                                    query = query.eq('pdv_nueva_imagen', filtroImagen);
+                                }
                             }
                             const { data, error } = await query;
                             if (error) { toast.error('Error al descargar'); return; }
                             if (!data || data.length === 0) { toast.error('No hay datos con ese filtro'); return; }
-                            const datosExportar = data.map(sede => ({
-                                'Nombre Sede': sede.ceco_nombre || 'Sin Nombre',
-                                'NIT': sede.tercero_nit || 'No Registrado',
-                                'Razón Social': sede.tercero_razon_social || 'No Registrado',
-                                'Nueva Imagen': sede.pdv_nueva_imagen || 'No Registrado'
-                            }));
+                            const datosExportar = data.map(sede => {
+                                let estadoImagen = sede.pdv_nueva_imagen || 'No Registrado';
+                                if (estadoImagen === 'Sí' && sede.pdv_color_imagen) {
+                                    estadoImagen += ` (${sede.pdv_color_imagen})`;
+                                }
+                                return {
+                                    'Nombre Sede': sede.ceco_nombre || 'Sin Nombre',
+                                    'NIT': sede.tercero_nit || 'No Registrado',
+                                    'Razón Social': sede.tercero_razon_social || 'No Registrado',
+                                    'Nueva Imagen': estadoImagen
+                                };
+                            });
                             exportarAExcel({ 'Reporte_Imagen': datosExportar }, `Reporte_Imagen_Detallado_${periodo}`);
                             toast.success('Reporte descargado correctamente');
                         }}
@@ -159,7 +187,7 @@ const AnalyticsDashboard = ({ analyticsData, modoOscuro, rolUsuario }) => {
                                 label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
                             >
                                 {dataSedesImagen.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    <Cell key={`cell-${index}`} fill={getCustomColor(entry.name, index)} />
                                 ))}
                             </Pie>
                             <RechartsTooltip
@@ -178,6 +206,65 @@ const AnalyticsDashboard = ({ analyticsData, modoOscuro, rolUsuario }) => {
                 ) : (
                     <div className="h-full flex items-center justify-center text-slate-400 font-medium">
                         No hay datos de imagen registrados.
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+
+    const renderGraficoLeads = () => (
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-700 flex flex-col">
+            <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/40 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400">
+                        <Users className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-white tracking-tight">Potenciales Franquiciados (Leads)</h3>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Top 10 Ciudades con Interés</p>
+                    </div>
+                </div>
+                <button
+                    onClick={() => exportarIndividual(dataFranquicias?.map(item => ({ Ciudad: item.ciudad, 'Cantidad Leads': item.cantidad })) || [], 'Leads', 'Reporte_Leads')}
+                    className="p-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 rounded-lg transition-colors border border-emerald-100 dark:border-emerald-800/50" title="Exportar solo este gráfico"
+                >
+                    <Download className="w-4 h-4" />
+                </button>
+            </div>
+
+            <div className="flex-1 min-h-[300px] w-full">
+                {dataFranquicias && dataFranquicias.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
+                        <BarChart data={dataFranquicias} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <XAxis
+                                dataKey="ciudad"
+                                tick={{ fill: modoOscuro ? '#94a3b8' : '#64748b', fontSize: 12, fontWeight: 600 }}
+                                axisLine={false}
+                                tickLine={false}
+                            />
+                            <YAxis
+                                tick={{ fill: modoOscuro ? '#94a3b8' : '#64748b', fontSize: 12 }}
+                                axisLine={false}
+                                tickLine={false}
+                            />
+                            <RechartsTooltip
+                                cursor={{ fill: modoOscuro ? '#334155' : '#f1f5f9' }}
+                                contentStyle={{
+                                    borderRadius: '12px',
+                                    border: 'none',
+                                    boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
+                                    fontWeight: 'bold',
+                                    backgroundColor: modoOscuro ? '#1e293b' : '#ffffff',
+                                    color: modoOscuro ? '#f8fafc' : '#1e293b'
+                                }}
+                                itemStyle={{ color: modoOscuro ? '#4ade80' : '#16a34a' }}
+                            />
+                            <Bar dataKey="cantidad" fill="#16a34a" radius={[6, 6, 0, 0]} barSize={40} />
+                        </BarChart>
+                    </ResponsiveContainer>
+                ) : (
+                    <div className="h-full flex items-center justify-center text-slate-400 font-medium">
+                        No hay datos en este periodo.
                     </div>
                 )}
             </div>
@@ -238,8 +325,13 @@ const AnalyticsDashboard = ({ analyticsData, modoOscuro, rolUsuario }) => {
                 </div>
             </div>
 
-            {/* VISTA MONTAJES: SOLO GRAFICO DE NUEVA IMAGEN */}
-            {rolUsuario === 'montajes' && renderGraficoImagen()}
+            {/* VISTA MONTAJES: GRAFICO DE NUEVA IMAGEN Y LEADS */}
+            {rolUsuario === 'montajes' && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {renderGraficoImagen()}
+                    {renderGraficoLeads()}
+                </div>
+            )}
 
             {/* VISTA RRHH: SOLO CANDIDATOS */}
             {rolUsuario === 'gerente_talento_humano' && (
@@ -299,62 +391,7 @@ const AnalyticsDashboard = ({ analyticsData, modoOscuro, rolUsuario }) => {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
                         {/* GRÁFICO BARRAS: FRANQUICIAS */}
-                        <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-700 flex flex-col">
-                            <div className="flex items-center justify-between mb-8">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/40 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400">
-                                        <Users className="w-5 h-5" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg font-bold text-slate-800 dark:text-white tracking-tight">Potenciales Franquiciados (Leads)</h3>
-                                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Top 10 Ciudades con Interés</p>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={() => exportarIndividual(dataFranquicias?.map(item => ({ Ciudad: item.ciudad, 'Cantidad Leads': item.cantidad })) || [], 'Leads', 'Reporte_Leads')}
-                                    className="p-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 rounded-lg transition-colors border border-emerald-100 dark:border-emerald-800/50" title="Exportar solo este gráfico"
-                                >
-                                    <Download className="w-4 h-4" />
-                                </button>
-                            </div>
-
-                            <div className="flex-1 min-h-[300px] w-full">
-                                {dataFranquicias && dataFranquicias.length > 0 ? (
-                                    <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-                                        <BarChart data={dataFranquicias} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                            <XAxis
-                                                dataKey="ciudad"
-                                                tick={{ fill: modoOscuro ? '#94a3b8' : '#64748b', fontSize: 12, fontWeight: 600 }}
-                                                axisLine={false}
-                                                tickLine={false}
-                                            />
-                                            <YAxis
-                                                tick={{ fill: modoOscuro ? '#94a3b8' : '#64748b', fontSize: 12 }}
-                                                axisLine={false}
-                                                tickLine={false}
-                                            />
-                                            <RechartsTooltip
-                                                cursor={{ fill: modoOscuro ? '#334155' : '#f1f5f9' }}
-                                                contentStyle={{
-                                                    borderRadius: '12px',
-                                                    border: 'none',
-                                                    boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
-                                                    fontWeight: 'bold',
-                                                    backgroundColor: modoOscuro ? '#1e293b' : '#ffffff',
-                                                    color: modoOscuro ? '#f8fafc' : '#1e293b'
-                                                }}
-                                                itemStyle={{ color: modoOscuro ? '#4ade80' : '#16a34a' }}
-                                            />
-                                            <Bar dataKey="cantidad" fill="#16a34a" radius={[6, 6, 0, 0]} barSize={40} />
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                ) : (
-                                    <div className="h-full flex items-center justify-center text-slate-400 font-medium">
-                                        No hay datos en este periodo.
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                        {renderGraficoLeads()}
 
                         {/* GRÁFICO TORTA: DOMICILIOS */}
                         <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-700 flex flex-col">
