@@ -100,6 +100,12 @@ const FORM_SECTIONS = {
 const SedesTable = ({ sedes, cargarSedes, rolUsuario }) => {
     const [globalFilter, setGlobalFilter] = useState('');
     const [columnFilters, setColumnFilters] = useState([]);
+    
+    // Filtros Adicionales
+    const [filtroDepartamento, setFiltroDepartamento] = useState('');
+    const [filtroCiudad, setFiltroCiudad] = useState('');
+    const [filtroImagen, setFiltroImagen] = useState('');
+    const [mostrarFiltrosAvanzados, setMostrarFiltrosAvanzados] = useState(false);
 
     const [modalAbierto, setModalAbierto] = useState(false);
     const [alertaBorrador, setAlertaBorrador] = useState(false);
@@ -147,6 +153,20 @@ const SedesTable = ({ sedes, cargarSedes, rolUsuario }) => {
     const [mostrarErrores, setMostrarErrores] = useState(false);
     const [mostrarNotificaciones, setMostrarNotificaciones] = useState(false);
     const [mostrarModalBienvenida, setMostrarModalBienvenida] = useState(false);
+
+    const departamentosUnicos = useMemo(() => {
+        if (!sedes) return [];
+        return [...new Set(sedes.map(s => s.pdv_departamento).filter(Boolean))].sort();
+    }, [sedes]);
+
+    const ciudadesUnicas = useMemo(() => {
+        if (!sedes) return [];
+        let filtradas = sedes;
+        if (filtroDepartamento) {
+            filtradas = filtradas.filter(s => s.pdv_departamento === filtroDepartamento);
+        }
+        return [...new Set(filtradas.map(s => s.pdv_ciudad).filter(Boolean))].sort();
+    }, [sedes, filtroDepartamento]);
 
     const alertasSedes = useMemo(() => {
         if (!sedes) return [];
@@ -415,14 +435,24 @@ const SedesTable = ({ sedes, cargarSedes, rolUsuario }) => {
         }
     };
 
-    // Filtrar sedes para roles de solo lectura
+    // Filtrar sedes para roles de solo lectura y filtros avanzados
     const sedesProcesadas = useMemo(() => {
         if (!sedes) return [];
+        let resultado = sedes;
         if (['montajes', 'espectador_sedes'].includes(rolUsuario)) {
-            return sedes.filter(s => s.pdv_estado === 'OPERANDO');
+            resultado = resultado.filter(s => s.pdv_estado === 'OPERANDO');
         }
-        return sedes;
-    }, [sedes, rolUsuario]);
+        if (filtroDepartamento) {
+            resultado = resultado.filter(s => s.pdv_departamento === filtroDepartamento);
+        }
+        if (filtroCiudad) {
+            resultado = resultado.filter(s => s.pdv_ciudad === filtroCiudad);
+        }
+        if (filtroImagen) {
+            resultado = resultado.filter(s => s.pdv_nueva_imagen === filtroImagen);
+        }
+        return resultado;
+    }, [sedes, rolUsuario, filtroDepartamento, filtroCiudad, filtroImagen]);
 
     const columns = useMemo(() => [
         {
@@ -450,7 +480,8 @@ const SedesTable = ({ sedes, cargarSedes, rolUsuario }) => {
             }
         },
         {
-            accessorKey: 'pdv_direccion',
+            id: 'pdv_direccion',
+            accessorFn: row => `${row.pdv_ciudad || ''} ${row.pdv_direccion || ''} ${row.pdv_departamento || ''}`,
             header: 'Ubicación',
             cell: ({ row }) => {
                 const direccion = row.original.pdv_direccion;
@@ -470,7 +501,8 @@ const SedesTable = ({ sedes, cargarSedes, rolUsuario }) => {
             }
         },
         {
-            accessorKey: 'pdv_celular',
+            id: 'pdv_celular',
+            accessorFn: row => `${row.pdv_celular || ''} ${row.pdv_telefono || ''} ${row.admin_nombre || ''}`,
             header: 'Contacto',
             cell: ({ row }) => {
                 const celular = row.original.pdv_celular;
@@ -536,49 +568,105 @@ const SedesTable = ({ sedes, cargarSedes, rolUsuario }) => {
     return (
         <div className="space-y-6">
             <div className="flex flex-col xl:flex-row justify-between gap-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl p-4 rounded-2xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 relative z-[60]">
-                <div className="flex flex-wrap sm:flex-nowrap gap-4 items-center w-full xl:w-auto">
-                    <div className="relative w-full sm:w-64 shrink-0">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                        <input
-                            type="text"
-                            placeholder="Buscar sedes..."
-                            value={globalFilter ?? ''}
-                            onChange={e => setGlobalFilter(e.target.value)}
-                            className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-slate-700 dark:text-slate-200 transition-all"
-                        />
+                <div className="flex flex-col gap-4 w-full xl:w-auto">
+                    <div className="flex flex-wrap sm:flex-nowrap gap-4 items-center w-full">
+                        <div className="relative w-full sm:w-64 shrink-0">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <input
+                                type="text"
+                                placeholder="Buscar en todos los campos..."
+                                value={globalFilter ?? ''}
+                                onChange={e => setGlobalFilter(e.target.value)}
+                                className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-slate-700 dark:text-slate-200 transition-all"
+                            />
+                        </div>
+
+                        <button
+                            onClick={() => setMostrarFiltrosAvanzados(!mostrarFiltrosAvanzados)}
+                            className={`px-4 py-2 rounded-xl text-sm font-bold border transition-all shrink-0 ${mostrarFiltrosAvanzados ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-slate-50 text-slate-700 border-slate-200'}`}
+                        >
+                            Filtros Avanzados
+                        </button>
+
+                        {!['montajes', 'espectador_sedes'].includes(rolUsuario) && (
+                            <select
+                                value={columnFilters.find(f => f.id === 'pdv_estado')?.value || ''}
+                                onChange={e => {
+                                    const val = e.target.value;
+                                    setColumnFilters(prev => {
+                                        const next = prev.filter(f => f.id !== 'pdv_estado');
+                                        if (val) next.push({ id: 'pdv_estado', value: val });
+                                        return next;
+                                    });
+                                }}
+                                className="w-full sm:w-auto px-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-slate-700 dark:text-slate-200 cursor-pointer transition-all"
+                            >
+                                <option value="">Todos los Estados</option>
+                                <option value="OPERANDO">✅ OPERANDO</option>
+                                <option value="CERRADO">❌ CERRADO</option>
+                                <option value="CERRADO TEMPORAL">⏸️ CERRADO TEMPORAL</option>
+                                <option value="ZONA">🗺️ ZONA</option>
+                                <option value="ZONA SIN PTO">🗺️ ZONA SIN PTO</option>
+                                <option value="SIN PTO">⚠️ SIN PTO</option>
+                                <option value="TRASLADO">🚚 TRASLADO</option>
+                            </select>
+                        )}
+
+                        <button
+                            onClick={handleExportar}
+                            className="flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 border border-emerald-200 dark:border-emerald-800 rounded-xl text-sm font-bold transition-all shadow-sm whitespace-nowrap shrink-0"
+                        >
+                            <Download className="w-4 h-4" />
+                            Excel
+                        </button>
                     </div>
 
-                    {!['montajes', 'espectador_sedes'].includes(rolUsuario) && (
-                        <select
-                            value={columnFilters.find(f => f.id === 'pdv_estado')?.value || ''}
-                            onChange={e => {
-                                const val = e.target.value;
-                                setColumnFilters(prev => {
-                                    const next = prev.filter(f => f.id !== 'pdv_estado');
-                                    if (val) next.push({ id: 'pdv_estado', value: val });
-                                    return next;
-                                });
-                            }}
-                            className="w-full sm:w-auto px-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-slate-700 dark:text-slate-200 cursor-pointer transition-all"
+                    {/* Panel de Filtros Avanzados */}
+                    {mostrarFiltrosAvanzados && (
+                        <motion.div 
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            className="flex flex-wrap gap-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700"
                         >
-                            <option value="">Todos los Estados</option>
-                            <option value="OPERANDO">✅ OPERANDO</option>
-                            <option value="CERRADO">❌ CERRADO</option>
-                            <option value="CERRADO TEMPORAL">⏸️ CERRADO TEMPORAL</option>
-                            <option value="ZONA">🗺️ ZONA</option>
-                            <option value="ZONA SIN PTO">🗺️ ZONA SIN PTO</option>
-                            <option value="SIN PTO">⚠️ SIN PTO</option>
-                            <option value="TRASLADO">🚚 TRASLADO</option>
-                        </select>
-                    )}
+                            <select 
+                                value={filtroDepartamento} 
+                                onChange={e => setFiltroDepartamento(e.target.value)} 
+                                className="px-3 py-2 bg-white dark:bg-slate-800 rounded-lg text-sm border border-slate-200 dark:border-slate-700 focus:ring-2 outline-none min-w-[200px]"
+                            >
+                                <option value="">Todos los Departamentos</option>
+                                {departamentosUnicos.map(d => <option key={d} value={d}>{d}</option>)}
+                            </select>
+                            
+                            <select 
+                                value={filtroCiudad} 
+                                onChange={e => setFiltroCiudad(e.target.value)} 
+                                className="px-3 py-2 bg-white dark:bg-slate-800 rounded-lg text-sm border border-slate-200 dark:border-slate-700 focus:ring-2 outline-none min-w-[200px]"
+                            >
+                                <option value="">Todas las Ciudades</option>
+                                {ciudadesUnicas.map(c => <option key={c} value={c}>{c}</option>)}
+                            </select>
+                            
+                            <select 
+                                value={filtroImagen} 
+                                onChange={e => setFiltroImagen(e.target.value)} 
+                                className="px-3 py-2 bg-white dark:bg-slate-800 rounded-lg text-sm border border-slate-200 dark:border-slate-700 focus:ring-2 outline-none min-w-[150px]"
+                            >
+                                <option value="">Nueva Imagen (Todas)</option>
+                                <option value="Sí">Sí</option>
+                                <option value="No">No</option>
+                                <option value="Próximo">Próximo</option>
+                            </select>
 
-                    <button
-                        onClick={handleExportar}
-                        className="flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 border border-emerald-200 dark:border-emerald-800 rounded-xl text-sm font-bold transition-all shadow-sm whitespace-nowrap shrink-0"
-                    >
-                        <Download className="w-4 h-4" />
-                        Excel
-                    </button>
+                            {(filtroDepartamento || filtroCiudad || filtroImagen) && (
+                                <button 
+                                    onClick={() => { setFiltroDepartamento(''); setFiltroCiudad(''); setFiltroImagen(''); }} 
+                                    className="text-red-500 text-sm font-bold px-3 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex items-center gap-1"
+                                >
+                                    <X className="w-4 h-4" /> Limpiar
+                                </button>
+                            )}
+                        </motion.div>
+                    )}
                 </div>
 
                 <div className="flex items-center gap-3">
