@@ -32,15 +32,33 @@ const FORM_SECTIONS = {
     ],
     "Punto de Venta": [
         { name: 'pdv_estado', label: 'Estado', required: true, type: 'select', options: ['CERRADO', 'CERRADO TEMPORAL', 'OPERANDO', 'SIN PTO', 'TRASLADO', 'ZONA', 'ZONA SIN PTO'] },
-        { name: 'pdv_direccion', label: 'Dirección', required: true },
-        { name: 'pdv_ubicacion', label: 'Barrio / Ubicación', allowNA: true },
+        { 
+            name: 'pdv_direccion', 
+            label: 'Dirección (Nomenclatura)', 
+            required: true, 
+            pattern: '^(CR|CL|AV|DG|CQ|TV|VÍA|VIA|KM)\\s.*',
+            placeholder: 'Ej: CR 123 #12-2',
+            helpText: 'Obligatorio: Inicia con CR, CL, AV, DG, CQ, TV. Ej: CR 123 #12-2'
+        },
+        { 
+            name: 'pdv_ubicacion', 
+            label: 'Observación Dirección', 
+            allowNA: true,
+            placeholder: 'Ej. Unicentro, Local 123 (Vacío si no tiene)'
+        },
         { name: 'pdv_departamento', label: 'Departamento', required: true, type: 'departamento' },
         { name: 'pdv_ciudad', label: 'Ciudad', required: true, type: 'ciudad' },
         { name: 'pdv_cc_mall_calle', label: 'CC / Mall / Calle' },
         { name: 'latitud', label: 'Latitud', type: 'number', step: 'any' },
         { name: 'longitud', label: 'Longitud', type: 'number', step: 'any' },
         { name: 'pdv_burbuja_local', label: 'Burbuja / Local', type: 'select', options: ['Burbuja', 'Local', 'N/A'] },
-        { name: 'pdv_horario', label: 'Horario', placeholder: 'Ej: L-V 8am a 6pm', allowNA: true },
+        { 
+            name: 'pdv_horario', 
+            label: 'Horario', 
+            placeholder: 'Ej: L-S 08:00-20:00 - D 08:00-15:00', 
+            allowNA: true,
+            helpText: 'Formato: L, M, MI, J, V, S, D, F. SIEMPRE incluir festivos (F).'
+        },
         { name: 'pdv_nueva_imagen', label: 'Nueva Imagen', type: 'select', options: ['Sí', 'No', 'Próximo'] },
         { name: 'pdv_color_imagen', label: 'Color Nueva Imagen', type: 'select', options: ['Roja', 'Café'], condition: { field: 'pdv_nueva_imagen', value: 'Sí' } },
         { name: 'pdv_tv', label: 'Tiene TV', type: 'select', options: ['Si', 'No'] },
@@ -49,12 +67,20 @@ const FORM_SECTIONS = {
         { name: 'pdv_aplicacion', label: 'Aplicación TV', type: 'select', options: ['Maginfo', 'CosechasTV', 'USB'], condition: { field: 'pdv_tv', value: 'Si' } },
 
         { name: 'pdv_telefono', label: 'Teléfono Fijo', mask: 'phone', allowNA: true },
-        { name: 'pdv_celular', label: 'Celular PDV', mask: 'phone', allowNA: true },
+        { 
+            name: 'pdv_celular', 
+            label: 'Teléfono Domicilios', 
+            mask: 'phone', 
+            allowNA: true, 
+            pattern: '^\\d{10}$',
+            placeholder: '10 dígitos sin espacios ni guiones',
+            helpText: 'Solo si tiene domicilio propio. De lo contrario, dejar vacío.'
+        },
 
         { name: 'pdv_fecha_apertura', label: 'Fecha Apertura', required: true, type: 'date', allowNA: true },
         { name: 'pdv_fecha_cierre', label: 'Fecha Cierre', type: 'date', allowNA: true },
         { name: 'pdv_asesora_callcenter', label: 'Asesora Call Center', required: true, type: 'select', options: ['Karen Mahecha', 'Luisa Marin', 'Yeiner Andres Baloyes', '#N/D'] },
-        { name: 'pdv_aplicacion_rappi', label: 'Aplicación', required: true, type: 'select', options: ['Didi', 'Rappi', 'Ambos', 'No'] }
+        { name: 'pdv_aplicacion_rappi', label: 'Aplicación Domicilios', required: true, type: 'select', options: ['Didi', 'Rappi', 'Ambos', 'No'] }
     ],
     "Administrador": [
         { name: 'admin_nombre', label: 'Nombre Administrador', allowNA: true },
@@ -375,6 +401,18 @@ const SedesTable = ({ sedes, cargarSedes, rolUsuario }) => {
                     if (!emailRegex.test(valor)) {
                         setSeccionActiva(seccion);
                         toast.error(`El formato de correo no es válido en: ${campo.label}`);
+                        return false;
+                    }
+                }
+                
+                if (valor && !esNA && campo.pattern) {
+                    const regex = new RegExp(campo.pattern, 'i'); // case insensitive
+                    if (!regex.test(valor)) {
+                        setSeccionActiva(seccion);
+                        toast.error(`Formato incorrecto en: ${campo.label}. ${campo.helpText || ''}`, {
+                            icon: '🚫',
+                            duration: 6000
+                        });
                         return false;
                     }
                 }
@@ -979,6 +1017,12 @@ const SedesTable = ({ sedes, cargarSedes, rolUsuario }) => {
                                                                             placeholder={campo.placeholder || `Ingresar ${campo.label.toLowerCase()}`}
                                                                         />
                                                                     )}
+
+                                                        {campo.helpText && (
+                                                            <p className="mt-1.5 text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
+                                                                {campo.helpText}
+                                                            </p>
+                                                        )}
 
                                                         {esInvalido && (
                                                             <p className="text-[10px] text-red-500 font-bold mt-1.5 flex items-center gap-1">
