@@ -9,29 +9,29 @@ import { exportarAExcel } from '../utils/exportExcel.js';
 
 // --- DICCIONARIO DE DATOS CON REGLAS ESTRICTAS ---
 const FORM_SECTIONS = {
-    "Centro de Costos": [
-        { name: 'ceco_nombre', label: 'Nombre CECO', required: true },
-        { name: 'ceco_hgi_cosechas', label: 'CECO HGI Cosechas', required: true, type: 'number' },
-        { name: 'ceco_dependencia_hgi', label: 'Dependencia HGI', readOnly: true, placeholder: 'Auto-generado (F...)' },
+    "Datos HGI": [
+        { name: 'ceco_nombre', label: 'Nombre del punto HGI', required: true },
+        { name: 'ceco_hgi_cosechas', label: 'Código HGI Cosechas', required: true, type: 'number' },
+        { name: 'ceco_dependencia_hgi', label: 'Código HGI Selecta', readOnly: true, placeholder: 'Auto-generado (F...)' },
         { name: 'ceco_zona_hgi', label: 'Zona HGI', required: true, type: 'select', options: ['Amazonas', 'Antioquia', 'Chocó', 'Costa', 'Cundinamarca-Boyacá', 'Eje Cafetero', 'La Dorada-Doradal-Puerto Boyacá', 'Meta-Casanare', 'Monteria San Andrés', 'Santanderes', 'Tolima-Huila', 'Valle-Cauca-Nariño', 'Valledupar-Guajira'] }
     ],
     "Tercero (Franquiciado)": [
         { name: 'tercero_nit', label: 'NIT / CC', required: true, mask: 'nit', placeholder: 'Ej: 900.111.222' },
         { name: 'tercero_razon_social', label: 'Razón Social', required: true, maxLength: 30 },
         { name: 'tercero_rep_legal', label: 'Representante Legal', required: true, maxLength: 50 },
-        { name: 'tercero_celular_rl', label: 'Celular R.L.', mask: 'phone', placeholder: '10 dígitos' },
-        { name: 'tercero_correo', label: 'Correo Electrónico', type: 'email' },
-        { name: 'tercero_correo_cc', label: 'Correo Cámara Comercio', type: 'email' },
+        { name: 'tercero_perfil_profesional', label: 'Perfil Profesional', required: true, type: 'select', options: ['Marcar', 'Bachiller', 'Universitario', 'Técnico', 'Tecnólogo', 'Especialista'] },
+        { name: 'tercero_profesion', label: 'Profesión' },
+        { name: 'tercero_celular_rl', label: 'Celular', mask: 'phone', placeholder: '10 dígitos' },
+        { name: 'tercero_correo', label: 'Correo Electrónico F.E./Comunicaciones', type: 'email' },
+        { name: 'req_autorizacion_datos', label: 'Autorización Tratamiento Datos', type: 'select', options: ['Si', 'No'] },
+        { name: 'tercero_validacion_sagrilaft', label: 'Validación Sagrilaft', type: 'select', options: ['Si', 'No'] },
         { name: 'tercero_tipo_franquiciado', label: 'Tipo Franquiciado', required: true, type: 'select', options: ['FRANQUICIADO', 'FRANQUICIANTE', 'SUBFRANQUICIADO', 'ZONA'] },
         { name: 'tercero_regimen_trib', label: 'Régimen Tributario', required: true, type: 'select', options: ['ORDINARIO (COMÚN)', 'SIMPLE TRIBUTACIÓN'] }
     ],
-    "Franquiciado Zonal": [
-        { name: 'zonal_nombre', label: 'Nombre Zonal', allowNA: true },
-        { name: 'zonal_telefono', label: 'Teléfono Zonal', allowNA: true, mask: 'phone' },
-        { name: 'zonal_correo', label: 'Correo Zonal', allowNA: true }
-    ],
     "Punto de Venta": [
         { name: 'pdv_estado', label: 'Estado', required: true, type: 'select', options: ['CERRADO', 'CERRADO TEMPORAL', 'OPERANDO', 'SIN PTO', 'TRASLADO', 'ZONA', 'ZONA SIN PTO'] },
+        { name: 'pdv_departamento', label: 'Departamento', required: true, type: 'departamento' },
+        { name: 'pdv_ciudad', label: 'Ciudad', required: true, type: 'ciudad' },
         { 
             name: 'pdv_direccion', 
             label: 'Dirección (Nomenclatura)', 
@@ -42,16 +42,13 @@ const FORM_SECTIONS = {
         },
         { 
             name: 'pdv_ubicacion', 
-            label: 'Observación Dirección', 
+            label: 'Complemento Dirección', 
             allowNA: true,
             placeholder: 'Ej. Unicentro, Local 123 (Vacío si no tiene)'
         },
-        { name: 'pdv_departamento', label: 'Departamento', required: true, type: 'departamento' },
-        { name: 'pdv_ciudad', label: 'Ciudad', required: true, type: 'ciudad' },
-        { name: 'pdv_cc_mall_calle', label: 'CC / Mall / Calle' },
+        { name: 'pdv_barrio', label: 'Barrio', allowNA: true, placeholder: 'Ej. Laureles' },
         { name: 'latitud', label: 'Latitud', type: 'number', step: 'any' },
         { name: 'longitud', label: 'Longitud', type: 'number', step: 'any' },
-        { name: 'pdv_burbuja_local', label: 'Burbuja / Local', type: 'select', options: ['Burbuja', 'Local', 'N/A'] },
         { 
             name: 'pdv_horario', 
             label: 'Horario', 
@@ -59,13 +56,17 @@ const FORM_SECTIONS = {
             allowNA: true,
             helpText: 'Formato: L, M, MI, J, V, S, D, F. SIEMPRE incluir festivos (F).'
         },
+        { name: 'pdv_fecha_apertura', label: 'Fecha Apertura', required: true, type: 'date', allowNA: true },
+        { name: 'pdv_fecha_cierre', label: 'Fecha Cierre', type: 'date', allowNA: true },
+        { name: 'pdv_cc_mall_calle', label: 'CC / Mall / Calle', type: 'select', options: ['CC', 'Mall', 'Calle'] },
+        { name: 'pdv_burbuja_local', label: 'Burbuja / Local', type: 'select', options: ['Burbuja', 'Local', 'N/A'] },
         { name: 'pdv_nueva_imagen', label: 'Nueva Imagen', type: 'select', options: ['Sí', 'No', 'Próximo'] },
         { name: 'pdv_color_imagen', label: 'Color Nueva Imagen', type: 'select', options: ['Roja', 'Café'], condition: { field: 'pdv_nueva_imagen', value: 'Sí' } },
-        { name: 'pdv_tv', label: 'Tiene TV', type: 'select', options: ['Si', 'No'] },
-        // Campos Condicionales de TV
+        { name: 'pdv_tv', label: 'TV', type: 'select', options: ['Si', 'No'] },
         { name: 'pdv_tv_cantidad', label: 'Cantidad TV', type: 'select', options: ['1', '2'], condition: { field: 'pdv_tv', value: 'Si' } },
+        { name: 'pdv_tv_posicion', label: 'Posición', type: 'select', options: ['Horizontal', 'Vertical', 'Vertical Izquierda', 'Vertical Derecha'], condition: { field: 'pdv_tv', value: 'Si' } },
         { name: 'pdv_aplicacion', label: 'Aplicación TV', type: 'select', options: ['Maginfo', 'CosechasTV', 'USB'], condition: { field: 'pdv_tv', value: 'Si' } },
-
+        { name: 'pdv_domicilio_propio', label: 'Domicilio Propio', type: 'select', options: ['Si', 'No'] },
         { name: 'pdv_telefono', label: 'Teléfono Fijo', mask: 'phone', allowNA: true },
         { 
             name: 'pdv_celular', 
@@ -76,11 +77,9 @@ const FORM_SECTIONS = {
             placeholder: '10 dígitos sin espacios ni guiones',
             helpText: 'Solo si tiene domicilio propio. De lo contrario, dejar vacío.'
         },
-
-        { name: 'pdv_fecha_apertura', label: 'Fecha Apertura', required: true, type: 'date', allowNA: true },
-        { name: 'pdv_fecha_cierre', label: 'Fecha Cierre', type: 'date', allowNA: true },
-        { name: 'pdv_asesora_callcenter', label: 'Asesora Call Center', required: true, type: 'select', options: ['Karen Mahecha', 'Luisa Marin', 'Yeiner Andres Baloyes', '#N/D'] },
-        { name: 'pdv_aplicacion_rappi', label: 'Aplicación Domicilios', required: true, type: 'select', options: ['Didi', 'Rappi', 'Ambos', 'No'] }
+        { name: 'pdv_asesora_callcenter', label: 'Asesor Facturación', required: true, type: 'select', options: ['Karen Mahecha', 'Luisa Marin', 'Yeiner Andres Baloyes', '#N/D'] },
+        { name: 'pdv_aplicacion_rappi', label: 'Plataforma Domicilio', required: true, type: 'select', options: ['Didi', 'Rappi', 'Ambos', 'No'] },
+        { name: 'req_numero', label: 'Número de Requerimiento' }
     ],
     "Administrador": [
         { name: 'admin_nombre', label: 'Nombre Administrador', allowNA: true },
@@ -116,10 +115,8 @@ const FORM_SECTIONS = {
         { name: 'poliza_vencimiento', label: 'Venc. Póliza', type: 'date' },
         { name: 'poliza_motivo_cancelacion', label: 'Motivo Cancelación Póliza' }
     ],
-    "Requerimientos y Otros": [
-        { name: 'req_requerimiento', label: 'Requerimiento', type: 'select', options: ['Si', 'No'] },
-        { name: 'req_observaciones_historia', label: 'Observaciones / Hist. Clínica' },
-        { name: 'req_autorizacion_datos', label: 'Autorización Tratamiento Datos', type: 'select', options: ['Si', 'No'] }
+    "Otros": [
+        { name: 'req_observaciones_historia', label: 'Observaciones / Hist. Clínica' }
     ]
 };
 
