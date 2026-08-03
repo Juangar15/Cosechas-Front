@@ -79,7 +79,6 @@ const FORM_SECTIONS = {
     "Software": [
         { name: 'software_facturacion', label: 'Facturación', type: 'select', options: ['Globus', 'Otro'] },
         { name: 'software_estado', label: 'Estado', type: 'select', options: ['Activo', 'Activo sin internet', 'Suspendido Mora', 'Suspendido por Resolución', 'Sin Software'] },
-        { name: 'software_observacion', label: 'Observación Software' },
         { name: 'software_contrato_legalizado', label: 'Contrato Legalizado', type: 'select', options: ['Si', 'No'] },
         { name: 'software_vencimiento_resolucion', label: 'Vencimiento Resolución Facturación', type: 'date' },
         { name: 'software_vencimiento_firma', label: 'Vencimiento Firma Digital', type: 'date' }
