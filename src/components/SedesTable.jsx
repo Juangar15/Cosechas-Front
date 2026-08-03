@@ -13,110 +13,83 @@ const FORM_SECTIONS = {
         { name: 'ceco_nombre', label: 'Nombre del punto HGI', required: true },
         { name: 'ceco_hgi_cosechas', label: 'Código HGI Cosechas', required: true, type: 'number' },
         { name: 'ceco_dependencia_hgi', label: 'Código HGI Selecta', readOnly: true, placeholder: 'Auto-generado (F...)' },
-        { name: 'ceco_zona_hgi', label: 'Zona HGI', required: true, type: 'select', options: ['Amazonas', 'Antioquia', 'Chocó', 'Costa', 'Cundinamarca-Boyacá', 'Eje Cafetero', 'La Dorada-Doradal-Puerto Boyacá', 'Meta-Casanare', 'Monteria San Andrés', 'Santanderes', 'Tolima-Huila', 'Valle-Cauca-Nariño', 'Valledupar-Guajira'] }
+        { name: 'ceco_zona_hgi', label: 'Zona HGI', required: true, type: 'select', options: ['Amazonas', 'Antioquia', 'Chocó', 'Costa', 'Cundinamarca-Boyacá', 'Eje Cafetero', 'La Dorada-Doradal-Puerto Boyacá', 'Meta-Casanare', 'Monteria', 'San Andrés', 'Santanderes', 'Tolima-Huila', 'Valle-Cauca-Nariño', 'Valledupar-Guajira'] }
     ],
     "Tercero (Franquiciado)": [
         { name: 'tercero_nit', label: 'NIT / CC', required: true, mask: 'nit', placeholder: 'Ej: 900.111.222' },
         { name: 'tercero_razon_social', label: 'Razón Social', required: true, maxLength: 30 },
         { name: 'tercero_rep_legal', label: 'Representante Legal', required: true, maxLength: 50 },
-        { name: 'tercero_perfil_profesional', label: 'Perfil Profesional', required: true, type: 'select', options: ['Marcar', 'Bachiller', 'Universitario', 'Técnico', 'Tecnólogo', 'Especialista'] },
+        { name: 'tercero_perfil_profesional', label: 'Perfil Profesional', required: true, type: 'select', options: ['Marcar', 'Bachiller', 'Universitario', 'Técnico', 'Tecnólogo', 'Especialista', 'Maestría', 'Doctorado', 'Educación Básica'] },
         { name: 'tercero_profesion', label: 'Profesión' },
         { name: 'tercero_celular_rl', label: 'Celular', mask: 'phone', placeholder: '10 dígitos' },
         { name: 'tercero_correo', label: 'Correo Electrónico F.E./Comunicaciones', type: 'email' },
+        { name: 'tercero_regimen_trib', label: 'Régimen Tributario', required: true, type: 'select', options: ['ORDINARIO (COMÚN)', 'SIMPLE TRIBUTACIÓN'] },
         { name: 'req_autorizacion_datos', label: 'Autorización Tratamiento Datos', type: 'select', options: ['Si', 'No'] },
-        { name: 'tercero_validacion_sagrilaft', label: 'Validación Sagrilaft', type: 'select', options: ['Si', 'No'] },
-        { name: 'tercero_tipo_franquiciado', label: 'Tipo Franquiciado', required: true, type: 'select', options: ['FRANQUICIADO', 'FRANQUICIANTE', 'SUBFRANQUICIADO', 'ZONA'] },
-        { name: 'tercero_regimen_trib', label: 'Régimen Tributario', required: true, type: 'select', options: ['ORDINARIO (COMÚN)', 'SIMPLE TRIBUTACIÓN'] }
+        { name: 'tercero_validacion_sagrilaft', label: 'Validación Sagrilaft', type: 'select', options: ['Si', 'No'] }
     ],
     "Punto de Venta": [
         { name: 'pdv_estado', label: 'Estado', required: true, type: 'select', options: ['CERRADO', 'CERRADO TEMPORAL', 'OPERANDO', 'SIN PTO', 'TRASLADO', 'ZONA', 'ZONA SIN PTO'] },
         { name: 'pdv_departamento', label: 'Departamento', required: true, type: 'departamento' },
         { name: 'pdv_ciudad', label: 'Ciudad', required: true, type: 'ciudad' },
-        { 
-            name: 'pdv_direccion', 
-            label: 'Dirección (Nomenclatura)', 
-            required: true, 
-            pattern: '^(CR|CL|AV|DG|CQ|TV|VÍA|VIA|KM)\\s.*',
-            placeholder: 'Ej: CR 123 #12-2',
-            helpText: 'Obligatorio: Inicia con CR, CL, AV, DG, CQ, TV. Ej: CR 123 #12-2'
-        },
-        { 
-            name: 'pdv_ubicacion', 
-            label: 'Complemento Dirección', 
-            allowNA: true,
-            placeholder: 'Ej. Unicentro, Local 123 (Vacío si no tiene)'
-        },
+        { name: 'pdv_direccion', label: 'Dirección (Nomenclatura)', required: true, pattern: '^(CR|CL|AV|DG|CQ|TV|VÍA|VIA|KM)\\s.*', placeholder: 'Ej: CR 123 #12-2', helpText: 'Obligatorio: Inicia con CR, CL, AV, DG, CQ, TV. Ej: CR 123 #12-2' },
+        { name: 'pdv_ubicacion', label: 'Complemento Dirección', allowNA: true, placeholder: 'Ej. Unicentro, Local 123 (Vacío si no tiene)' },
         { name: 'pdv_barrio', label: 'Barrio', allowNA: true, placeholder: 'Ej. Laureles' },
         { name: 'latitud', label: 'Latitud', type: 'number', step: 'any' },
         { name: 'longitud', label: 'Longitud', type: 'number', step: 'any' },
-        { 
-            name: 'pdv_horario', 
-            label: 'Horario', 
-            placeholder: 'Ej: L-S 08:00-20:00 - D 08:00-15:00', 
-            allowNA: true,
-            helpText: 'Formato: L, M, MI, J, V, S, D, F. SIEMPRE incluir festivos (F).'
-        },
+        { name: 'pdv_horario', label: 'Horario', placeholder: 'Ej: L-S 08:00-20:00 - D 08:00-15:00', allowNA: true, helpText: 'Formato: L, M, MI, J, V, S, D, F. SIEMPRE incluir festivos (F).' },
         { name: 'pdv_fecha_apertura', label: 'Fecha Apertura', required: true, type: 'date', allowNA: true },
         { name: 'pdv_fecha_cierre', label: 'Fecha Cierre', type: 'date', allowNA: true },
-        { name: 'pdv_cc_mall_calle', label: 'CC / Mall / Calle', type: 'text' },
-        { name: 'pdv_burbuja_local', label: 'Burbuja / Local', type: 'select', options: ['Burbuja', 'Local', 'Burbuja con Techo', 'N/A', 'No'] },
-        { name: 'pdv_nueva_imagen', label: 'Nueva Imagen', type: 'select', options: ['Sí', 'No', 'Próximo'] },
+        { name: 'pdv_cc_mall_calle', label: 'Ubicación Comercial', type: 'text' },
+        { name: 'pdv_burbuja_local', label: 'Burbuja / Local', type: 'select', options: ['Burbuja', 'Local', 'Burbuja con Techo', 'No'] },
+        { name: 'pdv_nueva_imagen', label: 'Nueva Imagen', type: 'select', options: ['Sí', 'No'] },
         { name: 'pdv_color_imagen', label: 'Color Nueva Imagen', type: 'select', options: ['Roja', 'Café'], condition: { field: 'pdv_nueva_imagen', value: 'Sí' } },
         { name: 'pdv_tv', label: 'TV', type: 'select', options: ['Si', 'No'] },
         { name: 'pdv_tv_cantidad', label: 'Cantidad TV', type: 'select', options: ['1', '2'], condition: { field: 'pdv_tv', value: 'Si' } },
         { name: 'pdv_tv_posicion', label: 'Posición', type: 'select', options: ['Horizontal', 'Vertical', 'Vertical Izquierda', 'Vertical Derecha'], condition: { field: 'pdv_tv', value: 'Si' } },
-        { name: 'pdv_aplicacion', label: 'Aplicación TV', type: 'select', options: ['Maginfo', 'CosechasTV', 'USB'], condition: { field: 'pdv_tv', value: 'Si' } },
+        { name: 'pdv_aplicacion', label: 'Aplicación TV', type: 'select', options: ['MAGICINFO', 'CosechasTV', 'USB'], condition: { field: 'pdv_tv', value: 'Si' } },
         { name: 'pdv_domicilio_propio', label: 'Domicilio Propio', type: 'select', options: ['Si', 'No'] },
-        { name: 'pdv_telefono', label: 'Teléfono Fijo', mask: 'phone', allowNA: true },
-        { 
-            name: 'pdv_celular', 
-            label: 'Teléfono Domicilios', 
-            mask: 'phone', 
-            allowNA: true, 
-            pattern: '^\\d{10}$',
-            placeholder: '10 dígitos sin espacios ni guiones',
-            helpText: 'Solo si tiene domicilio propio. De lo contrario, dejar vacío.'
-        },
-        { name: 'pdv_asesora_callcenter', label: 'Asesor Facturación', required: true, type: 'select', options: ['Karen Mahecha', 'Luisa Marin', 'Yeiner Andres Baloyes', '#N/D'] },
         { name: 'pdv_aplicacion_rappi', label: 'Plataforma Domicilio', required: true, type: 'select', options: ['Didi', 'Rappi', 'Ambos', 'No'] },
+        { name: 'pdv_celular', label: 'Teléfono Domicilio', mask: 'phone', allowNA: true, pattern: '^\\d{10}$', placeholder: '10 dígitos sin espacios ni guiones', helpText: 'Solo si tiene domicilio propio. De lo contrario, dejar vacío.' },
+        { name: 'pdv_asesora_callcenter', label: 'Asesor Facturación', required: true, type: 'select', options: ['Karen Mahecha', 'Luisa Marin', 'Yeiner Andres Baloyes', '#N/D'] },
         { name: 'req_numero', label: 'Número de Requerimiento' }
     ],
     "Administrador": [
-        { name: 'admin_nombre', label: 'Nombre Administrador', allowNA: true },
-        { name: 'admin_celular', label: 'Celular Administrador', allowNA: true, mask: 'phone' },
-        { name: 'admin_correo', label: 'Correo Administrador', allowNA: true, type: 'email' }
+        { name: 'admin_nombre', label: 'Nombre', allowNA: true },
+        { name: 'admin_celular', label: 'Teléfono', allowNA: true, mask: 'phone' }
     ],
     "Contrato": [
-        { name: 'contrato_prefijo', label: 'Prefijo' },
+        { name: 'contrato_modelo', label: 'Modelo', required: true, type: 'select', options: ['Nuevo', 'Vigente', 'No Vigente', 'Nuevo sin firma'] },
+        { name: 'contrato_prefijo', label: 'Prefijo', type: 'select', options: ['BIN', 'BINZON', 'BSUB', 'F', 'FF', 'FRANQUICIA', 'IN', 'INZON', 'No', 'No.', 'SUB', 'ZON', 'ZONAL'] },
         { name: 'contrato_numero', label: 'Número', type: 'number' },
-        { name: 'contrato_modelo', label: 'Modelo', required: true, type: 'select', options: ['Nuevo', 'Vigente', 'No Vigente', 'N/A'] },
-        { name: 'contrato_fecha_inicio', label: 'Fecha Inicio', required: true, type: 'date' },
-        { name: 'contrato_revisado', label: 'Revisado', type: 'select', options: ['Si', 'No'] },
-        { name: 'contrato_duracion_anios', label: 'Duración (Años)', required: true, type: 'number' },
-        { name: 'contrato_preaviso_meses', label: 'Preaviso (Meses)', type: 'select', options: ['3', '6', 'N/A'] },
-        { name: 'contrato_prorroga', label: 'Prórroga / Renovación', type: 'select', options: ['Pendiente', 'Pendiente Anulacion', 'Prorroga', 'Renovacion', 'N/A'] },
-        { name: 'contrato_zona_proteccion', label: 'Zona Protección', required: true, type: 'select', options: ['SI', 'NO', 'N/A'] },
-        { name: 'contrato_permite_decision', label: 'Permite Decisión Unilateral', required: true, type: 'select', options: ['SI', 'NO', 'N/A'] },
         { name: 'contrato_fecha_suscripcion', label: 'Fecha Suscripción', required: true, type: 'date', allowNA: true },
-        { name: 'contrato_legalizado', label: 'Contrato Legalizado', required: true, type: 'select', options: ['OK', 'PTE FIRMA', 'PTE FISICO', 'N/A'] },
-        { name: 'contrato_observacion', label: 'Observación Contrato' },
-        { name: 'contrato_admite_not_correo', label: 'Admite Not. Correo Electrónico', type: 'select', options: ['SI', 'NO'] },
-        { name: 'contrato_fecha_inicio_regalias', label: 'Fecha Inicio Regalías', type: 'date' }
+        { name: 'contrato_fecha_inicio', label: 'Fecha Inicio', required: true, type: 'date' },
+        { name: 'contrato_duracion_meses', label: 'Duración (Meses)', required: true, type: 'number' },
+        { name: 'contrato_preaviso_meses', label: 'Preaviso (Meses)', type: 'select', options: ['3'] },
+        { name: 'contrato_zona_proteccion', label: 'Zona Protección', required: true, type: 'select', options: ['SI', 'NO'] },
+        { name: 'contrato_descripcion_zona_proteccion', label: 'Descripción Zona Protección' },
+        { name: 'contrato_tiempo_apertura_meses', label: 'Tiempo para Apertura del Punto (Meses)', type: 'number' },
+        { name: 'contrato_clausula_tiempo_apertura', label: 'Cláusula Tiempo Apertura', type: 'select', options: ['Abierto', 'Cerrada'] },
+        { name: 'contrato_legalizado', label: 'Contrato Legalizado', required: true, type: 'select', options: ['OK', 'PTE FIRMA', 'PTE FISICO'] },
+        { name: 'contrato_admite_not_correo', label: 'Admite Not. Correo Electrónico Judicial', type: 'select', options: ['SI', 'NO'] },
+        { name: 'contrato_correo_camara_comercio', label: 'Correo en Cámara y Comercio', type: 'email' },
+        { name: 'contrato_fecha_inicio_regalias', label: 'Fecha Inicio Regalías', type: 'date' },
+        { name: 'contrato_envio_factura_whatsapp', label: 'Envío Factura Regalías por WhatsApp', type: 'select', options: ['Si', 'No'] },
+        { name: 'contrato_telefono_whatsapp', label: 'Teléfono WhatsApp', mask: 'phone' }
     ],
     "Software": [
-        { name: 'software_tipo', label: 'Tipo de Software', required: true, type: 'select', options: ['En Linea', 'Sin Software', 'Sin Internet', 'Cerró', 'Chily Sistem', 'Mekano', 'Suspendido'] },
+        { name: 'software_facturacion', label: 'Facturación', type: 'select', options: ['Globus', 'Otro'] },
+        { name: 'software_estado', label: 'Estado', type: 'select', options: ['Activo', 'Activo sin internet', 'Suspendido Mora', 'Suspendido por Resolución', 'Sin Software'] },
         { name: 'software_observacion', label: 'Observación Software' },
-        { name: 'software_contrato_legalizado', label: 'Contrato Software Legalizado', type: 'select', options: ['Si', 'No'] },
-        { name: 'software_inicio_certificado', label: 'Inicio Certificado Digital', type: 'date' },
-        { name: 'software_vencimiento_certificado', label: 'Vencimiento Certificado Digital', type: 'date' }
+        { name: 'software_contrato_legalizado', label: 'Contrato Legalizado', type: 'select', options: ['Si', 'No'] },
+        { name: 'software_vencimiento_resolucion', label: 'Vencimiento Resolución Facturación', type: 'date' },
+        { name: 'software_vencimiento_firma', label: 'Vencimiento Firma Digital', type: 'date' }
     ],
     "Póliza": [
         { name: 'poliza_corredor', label: 'Corredor de Seguros', required: true },
-        { name: 'poliza_vencimiento', label: 'Venc. Póliza', type: 'date' },
-        { name: 'poliza_motivo_cancelacion', label: 'Motivo Cancelación Póliza' }
+        { name: 'poliza_vencimiento', label: 'Vencimiento', type: 'date' }
     ],
-    "Otros": [
-        { name: 'req_observaciones_historia', label: 'Observaciones / Hist. Clínica' }
+    "Observaciones": [
+        { name: 'req_observaciones_historia', label: 'Observaciones Generales', type: 'textarea' }
     ]
 };
 
@@ -1001,7 +974,17 @@ const SedesTable = ({ sedes, cargarSedes, rolUsuario }) => {
                                                                         {ciudadesDisponibles.map(c => <option key={c} value={c}>{c}</option>)}
                                                                     </select>
                                                                 )
-                                                                    : (
+                                                                    : campo.type === 'textarea' ? (
+                                                                        <textarea
+                                                                            name={campo.name}
+                                                                            value={valorActual || ''}
+                                                                            onChange={handleInputChange}
+                                                                            disabled={disableInput}
+                                                                            rows={4}
+                                                                            className={`w-full bg-slate-50 dark:bg-slate-900/50 border rounded-xl p-3 text-sm text-slate-700 dark:text-slate-200 font-medium transition-all ${bordeInput} ${disableInput ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                                                            placeholder={campo.placeholder || `Ingresar ${campo.label.toLowerCase()}`}
+                                                                        />
+                                                                    ) : (
                                                                         <input
                                                                             type={esNA && campo.type === 'date' ? 'text' : (campo.type || 'text')}
                                                                             name={campo.name}
