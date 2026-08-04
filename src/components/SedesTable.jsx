@@ -64,7 +64,7 @@ const FORM_SECTIONS = {
         { name: 'contrato_fecha_suscripcion', label: 'Fecha Suscripción', required: true, type: 'date', allowNA: true },
         { name: 'contrato_fecha_inicio', label: 'Fecha Inicio', required: true, type: 'date' },
         { name: 'contrato_duracion_meses', label: 'Duración (Meses)', required: true, type: 'number' },
-        { name: 'contrato_preaviso_meses', label: 'Preaviso (Meses)', type: 'select', options: ['3'] },
+        { name: 'contrato_preaviso_meses', label: 'Preaviso (Meses)', type: 'number' },
         { name: 'contrato_zona_proteccion', label: 'Zona Protección', required: true, type: 'select', options: ['SI', 'NO'] },
         { name: 'contrato_descripcion_zona_proteccion', label: 'Descripción Zona Protección' },
         { name: 'contrato_tiempo_apertura_meses', label: 'Tiempo para Apertura del Punto (Meses)', type: 'number' },
@@ -170,12 +170,12 @@ const SedesTable = ({ sedes, cargarSedes, rolUsuario }) => {
         const hoy = new Date();
 
         sedes.forEach(sede => {
-            const { contrato_fecha_inicio, contrato_duracion_anios, contrato_preaviso_meses } = sede;
-            if (contrato_fecha_inicio && contrato_duracion_anios && contrato_preaviso_meses !== 'N/A' && contrato_preaviso_meses) {
+            const { contrato_fecha_inicio, contrato_duracion_meses, contrato_preaviso_meses } = sede;
+            if (contrato_fecha_inicio && contrato_duracion_meses && contrato_preaviso_meses !== 'N/A' && contrato_preaviso_meses) {
                 const fechaInicio = new Date(contrato_fecha_inicio);
 
                 const fechaFin = new Date(fechaInicio);
-                fechaFin.setFullYear(fechaFin.getFullYear() + Number(contrato_duracion_anios));
+                fechaFin.setMonth(fechaFin.getMonth() + Number(contrato_duracion_meses));
 
                 const fechaAlerta = new Date(fechaFin);
                 fechaAlerta.setMonth(fechaAlerta.getMonth() - Number(contrato_preaviso_meses));
