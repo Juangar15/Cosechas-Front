@@ -72,13 +72,14 @@ const FORM_SECTIONS = {
         { name: 'contrato_legalizado', label: 'Contrato Legalizado', required: true, type: 'select', options: ['OK', 'PTE FIRMA', 'PTE FISICO'] },
         { name: 'contrato_admite_not_correo', label: 'Admite Not. Correo Electrónico Judicial', type: 'select', options: ['SI', 'NO'] },
         { name: 'contrato_correo_camara_comercio', label: 'Correo en Cámara y Comercio', type: 'email' },
+        { name: 'contrato_paga_regalias', label: 'Paga Regalías', type: 'select', options: ['Si', 'No'] },
         { name: 'contrato_fecha_inicio_regalias', label: 'Fecha Inicio Regalías', type: 'date' },
         { name: 'contrato_envio_factura_whatsapp', label: 'Envío Factura Regalías por WhatsApp', type: 'select', options: ['Si', 'No'] },
         { name: 'contrato_telefono_whatsapp', label: 'Teléfono WhatsApp', mask: 'phone' }
     ],
     "Software": [
         { name: 'software_facturacion', label: 'Facturación', type: 'select', options: ['Globus', 'Otro'] },
-        { name: 'software_estado', label: 'Estado', type: 'select', options: ['Activo', 'Activo sin internet', 'Suspendido Mora', 'Suspendido por Resolución', 'Sin Software'] },
+        { name: 'software_estado', label: 'Estado', type: 'select', options: ['Activo', 'Activo sin internet', 'Suspendido Mora', 'Suspendido por Resolución', 'Sin Software', 'Inactivo'] },
         { name: 'software_contrato_legalizado', label: 'Contrato Legalizado', type: 'select', options: ['Si', 'No'] },
         { name: 'software_vencimiento_resolucion', label: 'Vencimiento Resolución Facturación', type: 'date' },
         { name: 'software_vencimiento_firma', label: 'Vencimiento Firma Digital', type: 'date' }
@@ -449,6 +450,7 @@ const SedesTable = ({ sedes, cargarSedes, rolUsuario }) => {
             'contrato legalizado': sede.contrato_legalizado || '',
             'admite not judicial por correo electronico': sede.contrato_admite_not_correo || '',
             'correo en camara y comercio': sede.contrato_correo_camara_comercio || '',
+            'paga regalias': sede.contrato_paga_regalias || '',
             'fecha incio regalias': sede.contrato_fecha_inicio_regalias || '',
             'envio fact regalias por whatsapp': sede.contrato_envio_factura_whatsapp || '',
             'telefono whatsapp': sede.contrato_telefono_whatsapp || '',
