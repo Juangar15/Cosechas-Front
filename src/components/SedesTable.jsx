@@ -39,7 +39,7 @@ const FORM_SECTIONS = {
         { name: 'pdv_horario', label: 'Horario', placeholder: 'Ej: L-S 08:00-20:00 - D 08:00-15:00', allowNA: true, helpText: 'Formato: L, M, MI, J, V, S, D, F. SIEMPRE incluir festivos (F).' },
         { name: 'pdv_fecha_apertura', label: 'Fecha Apertura', required: true, type: 'date', allowNA: true },
         { name: 'pdv_fecha_cierre', label: 'Fecha Cierre', type: 'date', allowNA: true },
-        { name: 'pdv_cc_mall_calle', label: 'Ubicación Comercial', type: 'text' },
+        { name: 'pdv_cc_mall_calle', label: 'Ubicación Comercial', type: 'select', options: ['Aeropuerto', 'Almacen', 'Calle', 'CC', 'Clinica', 'Mall', 'Parque Tematico', 'Terminal', 'Universidad'] },
         { name: 'pdv_burbuja_local', label: 'Burbuja / Local', type: 'select', options: ['Burbuja', 'Local', 'Burbuja con Techo', 'No'] },
         { name: 'pdv_nueva_imagen', label: 'Nueva Imagen', type: 'select', options: ['Sí', 'No'] },
         { name: 'pdv_color_imagen', label: 'Color Nueva Imagen', type: 'select', options: ['Roja', 'Café'], condition: { field: 'pdv_nueva_imagen', value: 'Sí' } },
@@ -70,11 +70,11 @@ const FORM_SECTIONS = {
         { name: 'contrato_tiempo_apertura_meses', label: 'Tiempo para Apertura del Punto (Meses)', type: 'number' },
         { name: 'contrato_clausula_tiempo_apertura', label: 'Cláusula Tiempo Apertura', type: 'select', options: ['Abierto', 'Cerrada'] },
         { name: 'contrato_legalizado', label: 'Contrato Legalizado', required: true, type: 'select', options: ['SI', 'PTE FIRMA', 'PTE FISICO'] },
-        { name: 'contrato_admite_not_correo', label: 'Admite Not. Correo Electrónico Judicial', type: 'select', options: ['SI', 'NO'] },
+        { name: 'contrato_admite_not_correo', label: 'Admite Not Judicial por Correo Electronico', type: 'select', options: ['SI', 'NO'] },
         { name: 'contrato_correo_camara_comercio', label: 'Correo en Cámara y Comercio', type: 'email' },
         { name: 'contrato_paga_regalias', label: 'Paga Regalías', type: 'select', options: ['Si', 'No'] },
         { name: 'contrato_fecha_inicio_regalias', label: 'Fecha Inicio Regalías', type: 'date' },
-        { name: 'contrato_envio_factura_whatsapp', label: 'Envío Factura Regalías por WhatsApp', type: 'select', options: ['Si', 'No'] },
+        { name: 'contrato_envio_factura_whatsapp', label: 'Envío Factura Regalías por WhatsApp', type: 'select', options: ['Si', 'No', 'Si PSE'] },
         { name: 'contrato_telefono_whatsapp', label: 'Teléfono WhatsApp', mask: 'phone' }
     ],
     "Software": [
