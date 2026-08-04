@@ -69,7 +69,7 @@ const FORM_SECTIONS = {
         { name: 'contrato_descripcion_zona_proteccion', label: 'Descripción Zona Protección' },
         { name: 'contrato_tiempo_apertura_meses', label: 'Tiempo para Apertura del Punto (Meses)', type: 'number' },
         { name: 'contrato_clausula_tiempo_apertura', label: 'Cláusula Tiempo Apertura', type: 'select', options: ['Abierto', 'Cerrada'] },
-        { name: 'contrato_legalizado', label: 'Contrato Legalizado', required: true, type: 'select', options: ['OK', 'PTE FIRMA', 'PTE FISICO'] },
+        { name: 'contrato_legalizado', label: 'Contrato Legalizado', required: true, type: 'select', options: ['SI', 'PTE FIRMA', 'PTE FISICO'] },
         { name: 'contrato_admite_not_correo', label: 'Admite Not. Correo Electrónico Judicial', type: 'select', options: ['SI', 'NO'] },
         { name: 'contrato_correo_camara_comercio', label: 'Correo en Cámara y Comercio', type: 'email' },
         { name: 'contrato_paga_regalias', label: 'Paga Regalías', type: 'select', options: ['Si', 'No'] },
