@@ -235,9 +235,10 @@ const AnalyticsDashboard = ({ analyticsData, modoOscuro, rolUsuario }) => {
             <div className="flex-1 min-h-[300px] w-full">
                 {dataFranquicias && dataFranquicias.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-                        <BarChart layout="vertical" data={dataFranquicias} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                        <BarChart layout="vertical" data={dataFranquicias.slice(0, 10)} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                             <XAxis
                                 type="number"
+                                allowDecimals={false}
                                 tick={{ fill: modoOscuro ? '#94a3b8' : '#64748b', fontSize: 12 }}
                                 axisLine={false}
                                 tickLine={false}
@@ -419,9 +420,10 @@ const AnalyticsDashboard = ({ analyticsData, modoOscuro, rolUsuario }) => {
                             <div className="flex-1 min-h-[300px] w-full">
                                 {dataDomicilios && dataDomicilios.length > 0 ? (
                                     <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-                                        <BarChart layout="vertical" data={dataDomicilios} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                                        <BarChart layout="vertical" data={dataDomicilios.slice(0, 10)} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                                             <XAxis
                                                 type="number"
+                                                allowDecimals={false}
                                                 tick={{ fill: modoOscuro ? '#94a3b8' : '#64748b', fontSize: 12 }}
                                                 axisLine={false}
                                                 tickLine={false}
