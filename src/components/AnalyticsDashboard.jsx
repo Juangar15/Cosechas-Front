@@ -442,7 +442,6 @@ const AnalyticsDashboard = ({ analyticsData, modoOscuro, rolUsuario }) => {
                                                     color: modoOscuro ? '#f8fafc' : '#1e293b'
                                                 }}
                                             />
-                                            <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', fontWeight: 600, color: modoOscuro ? '#cbd5e1' : '#475569' }} />
                                         </PieChart>
                                     </ResponsiveContainer>
                                 ) : (
