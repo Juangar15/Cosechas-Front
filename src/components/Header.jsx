@@ -1,10 +1,18 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { LogOut, RefreshCw, Sun, Moon, Citrus, Key } from 'lucide-react';
 import ChangePasswordModal from './ChangePasswordModal.jsx';
 
 const Header = ({ modoOscuro, toggleTheme, cargarTickets, signOut }) => {
-  const [showPasswordModal, setShowPasswordModal] = React.useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+
+  useEffect(() => {
+    if (window.location.hash.includes('type=invite') || window.location.hash.includes('type=recovery')) {
+      setShowPasswordModal(true);
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+  }, []);
+
   return (
     <motion.header 
       initial={{ y: -100 }}
@@ -47,7 +55,7 @@ const Header = ({ modoOscuro, toggleTheme, cargarTickets, signOut }) => {
           <button
             onClick={() => setShowPasswordModal(true)}
             className="p-2.5 rounded-full bg-slate-100/50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:bg-cosechas-verde hover:text-white transition-all shadow-sm border border-slate-200 dark:border-slate-700"
-            title="Configurar Contraseña"
+            title="Cambiar Contraseña"
           >
             <Key className="w-4 h-4" />
           </button>
