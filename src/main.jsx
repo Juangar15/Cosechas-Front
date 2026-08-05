@@ -4,10 +4,10 @@ import './index.css'
 import App from './App.jsx'
 import { Toaster } from 'react-hot-toast'
 
-// Interceptar el hash antes de que Supabase lo procese y limpie
-if (window.location.hash.includes('type=invite') || window.location.hash.includes('type=recovery')) {
-  localStorage.setItem('necesita_password', 'true');
-}
+// Función desactivada temporalmente a petición del usuario.
+// if (window.location.hash.includes('type=invite') || window.location.hash.includes('type=recovery')) {
+//   localStorage.setItem('necesita_password', 'true');
+// }
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

@@ -34,20 +34,11 @@ function App() {
 
   const [fotoModal, setFotoModal] = useState(null);
   const [vistaActiva, setVistaActiva] = useState('pqrs');
-  const [necesitaPassword, setNecesitaPassword] = useState(
-    localStorage.getItem('necesita_password') === 'true'
-  );
 
-  // Escuchar cambios de localStorage si vienen de la misma pestaña en main.jsx
-  useEffect(() => {
-    const checkPasswordFlag = () => {
-      setNecesitaPassword(localStorage.getItem('necesita_password') === 'true');
-    };
-    window.addEventListener('storage', checkPasswordFlag);
-    // Revisar por si acaso el main.jsx acaba de escribirlo antes del render
-    checkPasswordFlag();
-    return () => window.removeEventListener('storage', checkPasswordFlag);
-  }, []);
+  // Lógica de contraseña obligatoria (desactivada por ahora)
+  // const [necesitaPassword, setNecesitaPassword] = useState(
+  //   localStorage.getItem('necesita_password') === 'true'
+  // );
 
   // 2. Auto-seleccionar la pestaña correcta según el rol
   useEffect(() => {
@@ -86,17 +77,9 @@ function App() {
     );
   }
 
-  // B. Si no hay sesión o si requiere configurar su contraseña, al Login
-  if (!session || necesitaPassword) {
-    return (
-      <Login 
-        isSettingPassword={necesitaPassword} 
-        onPasswordSaved={() => {
-          localStorage.removeItem('necesita_password');
-          setNecesitaPassword(false);
-        }}
-      />
-    );
+  // B. Si no hay sesión, al Login
+  if (!session) {
+    return <Login />;
   }
 
   // C. Si inició sesión pero no está en la tabla de perfiles_usuarios
