@@ -1,8 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { LogOut, RefreshCw, Sun, Moon, Citrus } from 'lucide-react';
+import { LogOut, RefreshCw, Sun, Moon, Citrus, Key } from 'lucide-react';
+import ChangePasswordModal from './ChangePasswordModal.jsx';
 
 const Header = ({ modoOscuro, toggleTheme, cargarTickets, signOut }) => {
+  const [showPasswordModal, setShowPasswordModal] = React.useState(false);
   return (
     <motion.header 
       initial={{ y: -100 }}
@@ -43,6 +45,14 @@ const Header = ({ modoOscuro, toggleTheme, cargarTickets, signOut }) => {
           <div className="w-px h-8 bg-slate-200 dark:bg-slate-700 mx-1"></div>
           
           <button
+            onClick={() => setShowPasswordModal(true)}
+            className="p-2.5 rounded-full bg-slate-100/50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:bg-cosechas-verde hover:text-white transition-all shadow-sm border border-slate-200 dark:border-slate-700"
+            title="Configurar Contraseña"
+          >
+            <Key className="w-4 h-4" />
+          </button>
+          
+          <button
             onClick={signOut}
             className="p-2.5 rounded-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-800 transition-colors border border-red-200 dark:border-red-800 shadow-sm hover:scale-105"
             title="Cerrar Sesión"
@@ -51,6 +61,7 @@ const Header = ({ modoOscuro, toggleTheme, cargarTickets, signOut }) => {
           </button>
         </div>
       </div>
+      <ChangePasswordModal isOpen={showPasswordModal} onClose={() => setShowPasswordModal(false)} />
     </motion.header>
   );
 };
