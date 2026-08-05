@@ -4,7 +4,7 @@ import { Lock, X, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function ChangePasswordModal({ isOpen, onClose }) {
+export default function ChangePasswordModal({ isOpen, onClose, isMandatory = false }) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -38,7 +38,13 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
       toast.error('Error al actualizar la contraseña: ' + error.message);
     } else {
       toast.success('¡Contraseña actualizada correctamente!');
-      onClose();
+      localStorage.removeItem('necesita_password');
+      if (isMandatory) {
+        // En caso obligatorio, forzamos recarga para que el estado de sesión de Auth se refresque bien
+        window.location.reload();
+      } else {
+        onClose();
+      }
     }
     setLoading(false);
   };
@@ -59,30 +65,32 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
-            onClick={onClose}
+            onClick={isMandatory ? undefined : onClose}
           />
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative z-10 border border-slate-200/50 dark:border-slate-700/50"
+            className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative z-10 border border-slate-200/50 dark:border-slate-700/50 flex flex-col max-h-[90vh]"
           >
-            <div className="flex justify-between items-center p-6 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800/50">
+            <div className="flex justify-between items-center p-6 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800/50 shrink-0">
               <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-cosechas-verde/20 flex items-center justify-center text-cosechas-verde">
                   <Lock className="w-4 h-4" />
                 </div>
                 Configuración de Seguridad
               </h2>
-              <button
-                onClick={onClose}
-                className="p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              {!isMandatory && (
+                <button
+                  onClick={onClose}
+                  className="p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              )}
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6">
+            <form onSubmit={handleSubmit} className="p-6 overflow-y-auto">
               <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">
                 Establece una contraseña segura para tu cuenta. Si fuiste invitado recientemente, esto te permitirá iniciar sesión directamente con tu correo en el futuro.
               </p>
@@ -136,14 +144,16 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
                 </div>
               </div>
 
-              <div className="mt-8 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="px-5 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-xl transition-colors"
-                >
-                  Más tarde
-                </button>
+              <div className="mt-8 flex justify-end gap-3 shrink-0">
+                {!isMandatory && (
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="px-5 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-xl transition-colors"
+                  >
+                    Más tarde
+                  </button>
+                )}
                 <button
                   type="submit"
                   disabled={!isFormValid || loading}

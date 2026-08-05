@@ -5,10 +5,19 @@ import ChangePasswordModal from './ChangePasswordModal.jsx';
 
 const Header = ({ modoOscuro, toggleTheme, cargarTickets, signOut }) => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [isMandatory, setIsMandatory] = useState(false);
 
   useEffect(() => {
+    // Verificar si existe la bandera en localStorage (interceptada en main.jsx)
+    if (localStorage.getItem('necesita_password') === 'true') {
+      setShowPasswordModal(true);
+      setIsMandatory(true);
+    }
+    
+    // Fallback por si la URL todavía tiene el hash
     if (window.location.hash.includes('type=invite') || window.location.hash.includes('type=recovery')) {
       setShowPasswordModal(true);
+      setIsMandatory(true);
       window.history.replaceState(null, '', window.location.pathname + window.location.search);
     }
   }, []);
@@ -69,7 +78,11 @@ const Header = ({ modoOscuro, toggleTheme, cargarTickets, signOut }) => {
           </button>
         </div>
       </div>
-      <ChangePasswordModal isOpen={showPasswordModal} onClose={() => setShowPasswordModal(false)} />
+      <ChangePasswordModal 
+        isOpen={showPasswordModal} 
+        onClose={() => setShowPasswordModal(false)} 
+        isMandatory={isMandatory}
+      />
     </motion.header>
   );
 };
