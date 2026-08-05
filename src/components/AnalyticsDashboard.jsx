@@ -235,15 +235,18 @@ const AnalyticsDashboard = ({ analyticsData, modoOscuro, rolUsuario }) => {
             <div className="flex-1 min-h-[300px] w-full">
                 {dataFranquicias && dataFranquicias.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-                        <BarChart data={dataFranquicias} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                        <BarChart layout="vertical" data={dataFranquicias} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                             <XAxis
-                                dataKey="ciudad"
-                                tick={{ fill: modoOscuro ? '#94a3b8' : '#64748b', fontSize: 12, fontWeight: 600 }}
+                                type="number"
+                                tick={{ fill: modoOscuro ? '#94a3b8' : '#64748b', fontSize: 12 }}
                                 axisLine={false}
                                 tickLine={false}
                             />
                             <YAxis
-                                tick={{ fill: modoOscuro ? '#94a3b8' : '#64748b', fontSize: 12 }}
+                                type="category"
+                                dataKey="ciudad"
+                                tick={{ fill: modoOscuro ? '#94a3b8' : '#64748b', fontSize: 12, fontWeight: 600 }}
+                                width={140}
                                 axisLine={false}
                                 tickLine={false}
                             />
@@ -259,7 +262,7 @@ const AnalyticsDashboard = ({ analyticsData, modoOscuro, rolUsuario }) => {
                                 }}
                                 itemStyle={{ color: modoOscuro ? '#4ade80' : '#16a34a' }}
                             />
-                            <Bar dataKey="cantidad" fill="#16a34a" radius={[6, 6, 0, 0]} barSize={40} />
+                            <Bar dataKey="cantidad" fill="#16a34a" radius={[0, 6, 6, 0]} barSize={20} />
                         </BarChart>
                     </ResponsiveContainer>
                 ) : (
@@ -416,23 +419,23 @@ const AnalyticsDashboard = ({ analyticsData, modoOscuro, rolUsuario }) => {
                             <div className="flex-1 min-h-[300px] w-full">
                                 {dataDomicilios && dataDomicilios.length > 0 ? (
                                     <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-                                        <PieChart>
-                                            <Pie
-                                                data={dataDomicilios}
-                                                cx="50%"
-                                                cy="50%"
-                                                innerRadius={70}
-                                                outerRadius={100}
-                                                paddingAngle={5}
-                                                dataKey="recomendaciones"
-                                                nameKey="sede"
-                                                stroke="none"
-                                            >
-                                                {dataDomicilios.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                                ))}
-                                            </Pie>
+                                        <BarChart layout="vertical" data={dataDomicilios} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                                            <XAxis
+                                                type="number"
+                                                tick={{ fill: modoOscuro ? '#94a3b8' : '#64748b', fontSize: 12 }}
+                                                axisLine={false}
+                                                tickLine={false}
+                                            />
+                                            <YAxis
+                                                type="category"
+                                                dataKey="sede"
+                                                tick={{ fill: modoOscuro ? '#94a3b8' : '#64748b', fontSize: 12, fontWeight: 600 }}
+                                                width={140}
+                                                axisLine={false}
+                                                tickLine={false}
+                                            />
                                             <RechartsTooltip
+                                                cursor={{ fill: modoOscuro ? '#334155' : '#f1f5f9' }}
                                                 contentStyle={{
                                                     borderRadius: '12px',
                                                     border: 'none',
@@ -441,8 +444,10 @@ const AnalyticsDashboard = ({ analyticsData, modoOscuro, rolUsuario }) => {
                                                     backgroundColor: modoOscuro ? '#1e293b' : '#ffffff',
                                                     color: modoOscuro ? '#f8fafc' : '#1e293b'
                                                 }}
+                                                itemStyle={{ color: modoOscuro ? '#10b981' : '#059669' }}
                                             />
-                                        </PieChart>
+                                            <Bar dataKey="recomendaciones" fill="#10b981" radius={[0, 6, 6, 0]} barSize={20} />
+                                        </BarChart>
                                     </ResponsiveContainer>
                                 ) : (
                                     <div className="h-full flex items-center justify-center text-slate-400 font-medium">
