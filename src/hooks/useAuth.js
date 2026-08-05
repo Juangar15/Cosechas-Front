@@ -11,6 +11,12 @@ export const useAuth = () => {
     // 1. Obtener la sesión actual al cargar la app
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      if (session) {
+        // Limpiamos la URL para evitar que el token quede en el historial
+        if (window.location.hash.includes('access_token') || window.location.hash.includes('type=')) {
+          window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+      }
       if (session?.user?.email) {
         obtenerYGuardarRol(session.user.email);
       } else {
@@ -21,6 +27,11 @@ export const useAuth = () => {
     // 2. Escuchar cambios (cuando inician o cierran sesión)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      if (session) {
+        if (window.location.hash.includes('access_token') || window.location.hash.includes('type=')) {
+          window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+      }
       if (session?.user?.email) {
         obtenerYGuardarRol(session.user.email);
       } else {
