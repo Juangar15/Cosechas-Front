@@ -46,7 +46,7 @@ function App() {
     
     if (rolUsuario === 'admin' || rolUsuario === 'coord_sac') {
       setVistaActiva('pqrs');
-    } else if (['gerencia_juridica', 'gerente_talento_humano'].includes(rolUsuario)) {
+    } else if (['gerencia_juridica', 'gerente_talento_humano', 'gerencia_comercial'].includes(rolUsuario)) {
       setVistaActiva('analytics');
     } else if (['abogado_sedes', 'espectador_sedes', 'montajes'].includes(rolUsuario)) {
       setVistaActiva('sedes');
@@ -131,7 +131,7 @@ function App() {
         <div className="flex overflow-x-auto hide-scrollbar gap-2 md:gap-4 mb-6 border-b border-slate-200 dark:border-slate-700 pb-px">
 
           {/* Pestaña PQRS */}
-          {['admin', 'coord_sac', 'gerencia_juridica'].includes(rolUsuario) && (
+          {['admin', 'coord_sac', 'gerencia_juridica', 'gerencia_comercial'].includes(rolUsuario) && (
             <button
               onClick={() => setVistaActiva('pqrs')}
               className={`flex items-center whitespace-nowrap shrink-0 gap-2 px-4 md:px-6 py-3 font-bold text-sm rounded-t-xl transition-all font-sans ${vistaActiva === 'pqrs'
@@ -157,7 +157,7 @@ function App() {
           )}
 
           {/* Pestaña ANALÍTICAS */}
-          {['admin', 'gerencia_juridica', 'montajes', 'gerente_talento_humano'].includes(rolUsuario) && (
+          {['admin', 'gerencia_juridica', 'montajes', 'gerente_talento_humano', 'gerencia_comercial'].includes(rolUsuario) && (
             <button
               onClick={() => setVistaActiva('analytics')}
               className={`flex items-center whitespace-nowrap shrink-0 gap-2 px-4 md:px-6 py-3 font-bold text-sm rounded-t-xl transition-all font-sans ${vistaActiva === 'analytics'
@@ -185,7 +185,7 @@ function App() {
 
         {/* --- RENDERIZADO DE TABLAS Y DASHBOARDS --- */}
         {vistaActiva === 'pqrs' ? (
-          ['admin', 'coord_sac', 'gerencia_juridica'].includes(rolUsuario) ? (
+          ['admin', 'coord_sac', 'gerencia_juridica', 'gerencia_comercial'].includes(rolUsuario) ? (
             <TicketsTable 
               tickets={ticketsHook.tickets} 
               cargando={ticketsHook.cargando}

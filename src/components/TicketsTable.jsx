@@ -255,7 +255,7 @@ const TicketsTable = ({ tickets, cargando, total, page, pageSize, search, estado
         );
       }
     },
-    ...(rolUsuario !== 'gerencia_juridica' ? [{
+    ...(!['gerencia_juridica', 'gerencia_comercial'].includes(rolUsuario) ? [{
       id: 'accion',
       header: () => <div className="text-right">Acción</div>,
       cell: ({ row }) => {

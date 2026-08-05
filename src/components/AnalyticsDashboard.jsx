@@ -341,7 +341,7 @@ const AnalyticsDashboard = ({ analyticsData, modoOscuro, rolUsuario }) => {
             )}
 
             {/* VISTA GENERAL: RESTO DE GRÁFICOS (PQRS, Domicilios, etc) */}
-            {['admin', 'gerencia_juridica'].includes(rolUsuario) && (
+            {['admin', 'gerencia_juridica', 'gerencia_comercial'].includes(rolUsuario) && (
                 <>
                     {/* TARJETAS RESUMEN (PQRS Y CANDIDATOS) */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
