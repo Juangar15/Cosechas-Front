@@ -95,6 +95,11 @@ const TicketsTable = ({ tickets, cargando, total, page, pageSize, search, estado
 
   const onSelectChange = (ticketId, nuevoEstado) => {
     if (nuevoEstado === 'Cerrado') {
+      const ticket = ticketsProcesados.find(t => t.id === ticketId);
+      if (ticket && ticket.nombre_franquicia === 'Punto de venta no identificado') {
+        toast.error('Debes asignar una sede antes de poder resolver este PQRS.');
+        return;
+      }
       setTicketAResolver(ticketId);
       setNotaTexto('');
     } else {
