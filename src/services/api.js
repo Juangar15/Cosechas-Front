@@ -49,6 +49,13 @@ export const updateTicketStatus = async (ticketId, nuevoEstado, notaResolucion =
   return respuesta.data;
 };
 
+export const asignarSedeTicket = async (ticketId, nombreSede) => {
+  const respuesta = await axios.put(`${API_URL}/tickets/${ticketId}/asignar_sede`, {
+    nombre_sede: nombreSede
+  });
+  return respuesta.data;
+};
+
 // --- NUEVAS PETICIONES PARA FRANQUICIAS (CRM) ---
 export const fetchFranquicias = async (page = 1, pageSize = 10, search = '', estado = '', fechaInicio = '', fechaFin = '', orden = 'desc') => {
   const params = new URLSearchParams({ page, page_size: pageSize });

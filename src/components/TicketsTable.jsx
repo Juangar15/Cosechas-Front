@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, CheckCircle2, Search, FileImage, ChevronLeft, ChevronRight, Filter, Clock, AlertTriangle, Download, MessageCircle } from 'lucide-react';
+import { FileText, CheckCircle2, Search, FileImage, ChevronLeft, ChevronRight, Filter, Clock, AlertTriangle, Download, MessageCircle, MapPin, AlignLeft, X } from 'lucide-react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -10,7 +10,8 @@ import {
   flexRender,
 } from '@tanstack/react-table';
 import { exportarAExcel } from '../utils/exportExcel.js';
-import { fetchTickets } from '../services/api.js';
+import { fetchTickets, asignarSedeTicket } from '../services/api.js';
+import { supabase } from '../supabase.js';
 
 const calcularSLA = (fechaCreacion, estado) => {
   if (estado === 'Cerrado') return { color: 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700', texto: 'Completado', nivel: 0 };
@@ -46,6 +47,39 @@ const TicketsTable = ({ tickets, cargando, total, page, pageSize, search, estado
   const [exportando, setExportando] = useState(false);
   const [notaTexto, setNotaTexto] = useState('');
   const [notaVisible, setNotaVisible] = useState(null);
+  const [descripcionModal, setDescripcionModal] = useState(null);
+  const [asignarSedeModal, setAsignarSedeModal] = useState(null);
+  const [listaSedes, setListaSedes] = useState([]);
+  const [sedeSeleccionada, setSedeSeleccionada] = useState('');
+
+  useEffect(() => {
+    const fetchSedes = async () => {
+      try {
+        const { data, error } = await supabase.from('sedes_oficiales').select('ceco_nombre').eq('pdv_estado', 'OPERANDO').order('ceco_nombre');
+        if (data) setListaSedes(data);
+      } catch (err) {
+        console.error("Error cargando sedes:", err);
+      }
+    };
+    fetchSedes();
+  }, []);
+
+  const handleAsignarSedeSubmit = async () => {
+    if (!sedeSeleccionada) {
+      toast.error('Por favor selecciona una sede');
+      return;
+    }
+    const toastId = toast.loading('Asignando sede y enviando correo...');
+    try {
+      await asignarSedeTicket(asignarSedeModal, sedeSeleccionada);
+      toast.success('Sede asignada y correo enviado. Por favor, haz clic en Sincronizar.', { id: toastId });
+      setAsignarSedeModal(null);
+      setSedeSeleccionada('');
+    } catch (error) {
+      console.error(error);
+      toast.error('Error al asignar sede', { id: toastId });
+    }
+  };
 
   // Ya no filtramos tickets para gerencia jurídica, ven la tabla completa
   const ticketsProcesados = useMemo(() => {
@@ -161,10 +195,18 @@ const TicketsTable = ({ tickets, cargando, total, page, pageSize, search, estado
           <span className="font-bold text-slate-800 dark:text-white leading-tight">
             {row.original.nombre_franquicia || "Sedes Generales"}
           </span>
-          {row.original.nit_franquiciado && (
+          {row.original.nit_franquiciado && row.original.nit_franquiciado !== "SIN_NIT" && (
             <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold mt-0.5">
               NIT: {row.original.nit_franquiciado}
             </span>
+          )}
+          {row.original.nombre_franquicia === 'Punto de venta no identificado' && (
+            <button
+              onClick={() => setAsignarSedeModal(row.original.id)}
+              className="mt-1.5 flex items-center justify-center gap-1 text-[10px] bg-cosechas-rojo text-white px-2 py-1 rounded hover:bg-red-700 transition-colors shadow-sm font-bold w-max"
+            >
+              <MapPin className="w-3 h-3" /> Asignar Sede
+            </button>
           )}
         </div>
       )
@@ -186,10 +228,17 @@ const TicketsTable = ({ tickets, cargando, total, page, pageSize, search, estado
       accessorKey: 'detalle',
       header: 'Descripción',
       cell: info => (
-        // max-w-[200px] obliga a que el texto se corte en 2 líneas sin expandir la tabla
-        <p className="line-clamp-2 text-slate-500 dark:text-slate-400 leading-relaxed max-w-[200px] text-xs" title={info.getValue()}>
-          {info.getValue()}
-        </p>
+        <div className="flex flex-col gap-1 items-start">
+          <p className="line-clamp-2 text-slate-500 dark:text-slate-400 leading-relaxed max-w-[200px] text-xs">
+            {info.getValue()}
+          </p>
+          <button
+            onClick={() => setDescripcionModal(info.getValue())}
+            className="flex items-center gap-1 text-[10px] font-bold text-cosechas-verde hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 px-1.5 py-0.5 rounded transition-colors"
+          >
+            <AlignLeft className="w-3 h-3" /> Ver Todo
+          </button>
+        </div>
       )
     },
     {
@@ -618,6 +667,100 @@ const TicketsTable = ({ tickets, cargando, total, page, pageSize, search, estado
                   className="px-6 py-2.5 bg-slate-100 dark:bg-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors shadow-sm"
                 >
                   Entendido
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {descripcionModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4" 
+            onClick={() => setDescripcionModal(null)}
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-8 max-w-lg w-full border-t-4 border-cosechas-verde flex flex-col max-h-[80vh]" 
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-cosechas-verde/10 rounded-full flex items-center justify-center">
+                    <AlignLeft className="w-5 h-5 text-cosechas-verde" />
+                  </div>
+                  <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Descripción del PQRS</h3>
+                </div>
+                <button onClick={() => setDescripcionModal(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-inner overflow-y-auto">
+                <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium whitespace-pre-wrap">
+                  {descripcionModal}
+                </p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {asignarSedeModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4" 
+            onClick={() => setAsignarSedeModal(null)}
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-8 max-w-sm w-full border border-slate-200 dark:border-slate-700" 
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-cosechas-rojo/10 rounded-full flex items-center justify-center shrink-0">
+                  <MapPin className="w-6 h-6 text-cosechas-rojo" />
+                </div>
+                <h3 className="text-lg font-extrabold text-slate-900 dark:text-white leading-tight">Asignar Sede Oficial</h3>
+              </div>
+              
+              <div className="mb-6">
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Selecciona la Sede</label>
+                <select
+                  value={sedeSeleccionada}
+                  onChange={(e) => setSedeSeleccionada(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-cosechas-rojo text-sm font-medium"
+                >
+                  <option value="">-- Seleccionar --</option>
+                  {listaSedes.map(sede => (
+                    <option key={sede.ceco_nombre} value={sede.ceco_nombre}>{sede.ceco_nombre}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <button 
+                  onClick={() => setAsignarSedeModal(null)} 
+                  className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  onClick={handleAsignarSedeSubmit}
+                  disabled={!sedeSeleccionada}
+                  className="px-5 py-2.5 bg-cosechas-rojo hover:bg-red-700 text-white rounded-xl text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-cosechas-rojo/20"
+                >
+                  Asignar y Notificar
                 </button>
               </div>
             </motion.div>
