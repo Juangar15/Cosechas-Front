@@ -741,29 +741,41 @@ const TicketsTable = ({ tickets, cargando, total, page, pageSize, search, estado
               </div>
               
               <div className="mb-6">
-                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Selecciona la Sede</label>
-                <div className="relative mb-3">
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Buscar y Seleccionar Sede</label>
+                <div className="relative mb-2">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Search className="w-4 h-4 text-slate-400" />
                   </div>
                   <input
                     type="text"
-                    placeholder="Buscar sede por nombre..."
+                    placeholder="Escribe para buscar..."
                     value={busquedaSede}
-                    onChange={(e) => setBusquedaSede(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cosechas-rojo transition-all"
+                    onChange={(e) => {
+                      setBusquedaSede(e.target.value);
+                      if (sedeSeleccionada) setSedeSeleccionada('');
+                    }}
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cosechas-rojo transition-all"
                   />
                 </div>
-                <select
-                  value={sedeSeleccionada}
-                  onChange={(e) => setSedeSeleccionada(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-cosechas-rojo text-sm font-medium"
-                >
-                  <option value="">-- Seleccionar --</option>
-                  {sedesFiltradas.map(sede => (
-                    <option key={sede.ceco_nombre} value={sede.ceco_nombre}>{sede.ceco_nombre}</option>
-                  ))}
-                </select>
+                
+                <div className="max-h-48 overflow-y-auto bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-inner scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600">
+                  {sedesFiltradas.length > 0 ? (
+                    sedesFiltradas.map(sede => (
+                      <button
+                        key={sede.ceco_nombre}
+                        onClick={() => {
+                          setSedeSeleccionada(sede.ceco_nombre);
+                          setBusquedaSede(sede.ceco_nombre);
+                        }}
+                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${sedeSeleccionada === sede.ceco_nombre ? 'bg-cosechas-rojo text-white font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                      >
+                        {sede.ceco_nombre}
+                      </button>
+                    ))
+                  ) : (
+                    <div className="px-4 py-4 text-sm text-slate-500 text-center">No se encontraron sedes</div>
+                  )}
+                </div>
               </div>
 
               <div className="flex justify-end gap-3">
