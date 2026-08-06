@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, CheckCircle2, Search, FileImage, ChevronLeft, ChevronRight, Filter, Clock, AlertTriangle, Download } from 'lucide-react';
+import { FileText, CheckCircle2, Search, FileImage, ChevronLeft, ChevronRight, Filter, Clock, AlertTriangle, Download, MessageCircle } from 'lucide-react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -129,10 +129,24 @@ const TicketsTable = ({ tickets, cargando, total, page, pageSize, search, estado
         const celular = row.original.celular_cliente;
         const nombre = row.original.nombre_cliente || 'Sin nombre';
         const correo = row.original.correo_cliente || 'Sin correo';
+        const celularLimpio = celular ? celular.replace(/\D/g, '') : '';
         return (
           <div className="flex flex-col gap-1 min-w-[140px]">
             <span className="font-bold text-slate-800 dark:text-slate-200 text-sm leading-tight">{nombre}</span>
-            <span className="font-semibold text-cosechas-verde dark:text-emerald-400 text-xs">{celular}</span>
+            <div className="flex items-center gap-2">
+                <span className="font-semibold text-cosechas-verde dark:text-emerald-400 text-xs">{celular}</span>
+                {celularLimpio && (
+                    <a
+                        href={`https://wa.me/${celularLimpio}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-1 bg-cosechas-verde/10 text-cosechas-verde hover:bg-cosechas-verde hover:text-white rounded-md transition-colors border border-cosechas-verde/20"
+                        title="Contactar por WhatsApp"
+                    >
+                        <MessageCircle className="w-3 h-3" />
+                    </a>
+                )}
+            </div>
             {correo !== 'Sin correo' && <span className="text-xs text-slate-500 dark:text-slate-400 break-all">{correo}</span>}
           </div>
         );
