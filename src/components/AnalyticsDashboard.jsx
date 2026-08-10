@@ -56,7 +56,11 @@ const AnalyticsDashboard = ({ analyticsData, modoOscuro, rolUsuario }) => {
                 Periodo: periodo,
                 'Total PQRS': dataPqrs?.total || 0,
                 'PQRS Resueltas': dataPqrs?.cerrados || 0,
-                'Tasa de Resolución (%)': dataPqrs?.tasa_resolucion ? dataPqrs.tasa_resolucion.toFixed(1) : '0.0'
+                'Tasa de Resolución (%)': dataPqrs?.tasa_resolucion ? dataPqrs.tasa_resolucion.toFixed(1) : '0.0',
+                'Total Leads Cerrados': dataFranquiciasConversion?.total_cerrados || 0,
+                'Leads Aprobados': dataFranquiciasConversion?.aprobados || 0,
+                'Leads Descartados': dataFranquiciasConversion?.descartados || 0,
+                'Hit Rate Comercial (%)': dataFranquiciasConversion?.hit_rate_aprobado || 0
             }],
             'PQRS_Sedes': dataPqrsSedes?.map(item => ({ Sede: item.sede, 'Cantidad PQRS': item.cantidad })) || [],
             'Leads_Franquicias': dataFranquicias?.map(item => ({ Ciudad: item.ciudad, 'Cantidad Leads': item.cantidad })) || [],
@@ -348,7 +352,7 @@ const AnalyticsDashboard = ({ analyticsData, modoOscuro, rolUsuario }) => {
             {['admin', 'gerencia_juridica', 'gerencia_comercial'].includes(rolUsuario) && (
                 <>
                     {/* TARJETAS RESUMEN (PQRS Y CANDIDATOS) */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
                         <motion.div whileHover={{ y: -4 }} className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-xl border border-slate-100 dark:border-slate-700 relative overflow-hidden">
                             <div className="absolute -right-6 -top-6 w-24 h-24 bg-cosechas-rojo/10 rounded-full blur-2xl"></div>
                             <div className="flex items-center gap-4 mb-4">

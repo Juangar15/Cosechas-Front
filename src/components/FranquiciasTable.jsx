@@ -312,8 +312,9 @@ const FranquiciasTable = ({ franquicias, cargando, total, page, pageSize, search
                             className="px-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-cosechas-verde/50 text-slate-700 dark:text-slate-200 cursor-pointer transition-all"
                         >
                             <option value="">Todos los Leads</option>
-                            <option value="Pendiente">🔴 Pendientes</option>
-                            <option value="Contactado">✅ Contactados</option>
+                            <option value="Nuevo">🔴 Nuevos</option>
+                            <option value="En Negociación">💬 En Negociación</option>
+                            <option value="Aprobado">🎉 Aprobados</option>
                             <option value="Descartado">❌ Descartados</option>
                         </select>
                         <select
