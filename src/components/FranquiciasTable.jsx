@@ -52,11 +52,13 @@ const FranquiciasTable = ({ franquicias, cargando, total, page, pageSize, search
         const loadingToast = toast.loading('Guardando gestión...');
         handleCambiarEstado(crmLeadAbierto.id, estadoCrm, nuevaNotaCrm.trim() !== '' ? nuevaNotaCrm : null)
             .then(() => {
-                toast.dismiss(loadingToast);
+                toast.success('Gestión guardada exitosamente', { id: loadingToast });
                 setCrmLeadAbierto(null);
                 setNuevaNotaCrm('');
             })
-            .catch(() => toast.dismiss(loadingToast));
+            .catch(() => {
+                toast.error('Error al guardar', { id: loadingToast });
+            });
     };
 
     const handleExportar = async () => {
@@ -538,30 +540,40 @@ const FranquiciasTable = ({ franquicias, cargando, total, page, pageSize, search
                                         onChange={(e) => setNuevaNotaCrm(e.target.value)}
                                     ></textarea>
                                     
-                                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                                        <div className="w-full sm:w-auto">
-                                            <span className="text-xs font-bold text-slate-500 mr-2">Estado del Lead:</span>
-                                            <select
-                                                value={estadoCrm}
-                                                onChange={(e) => setEstadoCrm(e.target.value)}
-                                                className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold text-sm px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-cosechas-rojo w-full sm:w-auto"
-                                            >
-                                                <option value="Nuevo">🔴 Nuevo</option>
-                                                <option value="En Negociación">💬 En Negociación</option>
-                                                <option value="Aprobado">🎉 Aprobado</option>
-                                                <option value="Descartado">❌ Descartado</option>
-                                            </select>
+                                    <div className="flex flex-col gap-4">
+                                        <div className="w-full">
+                                            <span className="text-xs font-bold text-slate-500 mb-2 block">Estado del Lead:</span>
+                                            <div className="flex flex-wrap gap-2">
+                                                {[
+                                                    { id: 'Nuevo', icon: '🔴', label: 'Nuevo' },
+                                                    { id: 'En Negociación', icon: '💬', label: 'En Negociación' },
+                                                    { id: 'Aprobado', icon: '🎉', label: 'Aprobado' },
+                                                    { id: 'Descartado', icon: '❌', label: 'Descartado' }
+                                                ].map(est => (
+                                                    <button
+                                                        key={est.id}
+                                                        onClick={() => setEstadoCrm(est.id)}
+                                                        className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border flex items-center gap-1.5 ${
+                                                            estadoCrm === est.id 
+                                                            ? 'bg-slate-800 text-white border-slate-800 shadow-md transform scale-105' 
+                                                            : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700'
+                                                        }`}
+                                                    >
+                                                        <span>{est.icon}</span> {est.label}
+                                                    </button>
+                                                ))}
+                                            </div>
                                         </div>
-                                        <div className="flex gap-2 w-full sm:w-auto">
+                                        <div className="flex gap-2 justify-end w-full mt-2">
                                             <button
                                                 onClick={() => setCrmLeadAbierto(null)}
-                                                className="flex-1 sm:flex-none px-4 py-2 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                                className="px-4 py-2 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                                             >
                                                 Cancelar
                                             </button>
                                             <button
                                                 onClick={handleGuardarCrm}
-                                                className="flex-1 sm:flex-none px-5 py-2 rounded-xl text-sm font-bold text-white bg-cosechas-rojo hover:bg-red-700 shadow-md shadow-cosechas-rojo/20 transition-all"
+                                                className="px-5 py-2 rounded-xl text-sm font-bold text-white bg-cosechas-rojo hover:bg-red-700 shadow-md shadow-cosechas-rojo/20 transition-all"
                                             >
                                                 Guardar
                                             </button>
