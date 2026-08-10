@@ -86,11 +86,15 @@ const FranquiciasTable = ({ franquicias, cargando, total, page, pageSize, search
                         // Si falla, se deja como texto original
                     }
                 }
+
+                let estadoReal = lead.estado;
+                if (estadoReal === 'Pendiente') estadoReal = 'Nuevo';
+                if (estadoReal === 'Contactado') estadoReal = 'En Negociación';
                 
                 return {
                     ID: lead.id,
                     'Fecha Creación': new Date(lead.fecha_creacion).toLocaleString(),
-                    Estado: lead.estado,
+                    Estado: estadoReal,
                     'Tipo Franquicia': lead.tipo_franquicia || 'N/A',
                     'Nombre': lead.nombre || 'N/A',
                     'Celular': lead.celular,
