@@ -24,7 +24,7 @@ const getCustomColor = (name, index) => {
 };
 
 const AnalyticsDashboard = ({ analyticsData, modoOscuro, rolUsuario }) => {
-    const { periodo, setPeriodo, fechaInicio, setFechaInicio, fechaFin, setFechaFin, dataPqrs, dataPqrsMensual, dataPqrsSedes, dataSedesImagen, dataFranquicias, dataDomicilios, dataCandidatos, cargando } = analyticsData;
+    const { periodo, setPeriodo, fechaInicio, setFechaInicio, fechaFin, setFechaFin, dataPqrs, dataPqrsMensual, dataPqrsSedes, dataSedesImagen, dataFranquicias, dataFranquiciasConversion, dataDomicilios, dataCandidatos, cargando } = analyticsData;
     const [filtroImagen, setFiltroImagen] = React.useState('');
 
     if (cargando) {
@@ -385,6 +385,28 @@ const AnalyticsDashboard = ({ analyticsData, modoOscuro, rolUsuario }) => {
                             </div>
                             <div className="text-4xl font-black text-slate-800 dark:text-white tracking-tight flex items-baseline gap-1">
                                 {dataPqrs?.tasa_resolucion ? dataPqrs.tasa_resolucion.toFixed(1) : '0.0'}<span className="text-2xl text-slate-400">%</span>
+                            </div>
+                        </motion.div>
+
+                        <motion.div whileHover={{ y: -4 }} className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-xl border border-slate-100 dark:border-slate-700 relative overflow-hidden">
+                            <div className="absolute -right-6 -top-6 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl"></div>
+                            <div className="flex items-center justify-between mb-4 relative z-10">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-600 dark:text-amber-400 shadow-inner">
+                                        <TrendingUp className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-slate-500 dark:text-slate-400 leading-tight">Hit Rate<br />Comercial</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex flex-col relative z-10">
+                                <div className="text-4xl font-black text-slate-800 dark:text-white tracking-tight flex items-baseline gap-1">
+                                    {dataFranquiciasConversion?.hit_rate_aprobado || 0}<span className="text-2xl text-slate-400">%</span>
+                                </div>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
+                                    {dataFranquiciasConversion?.aprobados || 0} Aprobados de {dataFranquiciasConversion?.total_cerrados || 0} cerrados
+                                </p>
                             </div>
                         </motion.div>
 

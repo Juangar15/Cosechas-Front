@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fetchAnalyticsPQRS, fetchAnalyticsPQRSSedes, fetchAnalyticsFranquicias, fetchAnalyticsDomicilios, fetchAnalyticsPQRSMensual, fetchAnalyticsSedesImagen, fetchAnalyticsCandidatos } from '../services/api.js';
+import { fetchAnalyticsPQRS, fetchAnalyticsPQRSSedes, fetchAnalyticsFranquicias, fetchAnalyticsFranquiciasConversion, fetchAnalyticsDomicilios, fetchAnalyticsPQRSMensual, fetchAnalyticsSedesImagen, fetchAnalyticsCandidatos } from '../services/api.js';
 import { supabase } from '../supabase.js';
 
 export const useAnalytics = (session) => {
@@ -11,6 +11,7 @@ export const useAnalytics = (session) => {
     const [dataPqrsSedes, setDataPqrsSedes] = useState([]);
     const [dataSedesImagen, setDataSedesImagen] = useState([]);
     const [dataFranquicias, setDataFranquicias] = useState([]);
+    const [dataFranquiciasConversion, setDataFranquiciasConversion] = useState(null);
     const [dataDomicilios, setDataDomicilios] = useState([]);
     const [dataCandidatos, setDataCandidatos] = useState(null);
     const [cargando, setCargando] = useState(true);
@@ -18,12 +19,13 @@ export const useAnalytics = (session) => {
     const cargarAnaliticas = async () => {
         try {
             setCargando(true);
-            const [resPqrs, resPqrsMensual, resPqrsSedes, resSedesImagen, resFranquicias, resDomicilios, resCandidatos] = await Promise.all([
+            const [resPqrs, resPqrsMensual, resPqrsSedes, resSedesImagen, resFranquicias, resFranquiciasConversion, resDomicilios, resCandidatos] = await Promise.all([
                 fetchAnalyticsPQRS(periodo, fechaInicio, fechaFin),
                 fetchAnalyticsPQRSMensual(periodo, fechaInicio, fechaFin),
                 fetchAnalyticsPQRSSedes(periodo, fechaInicio, fechaFin),
                 fetchAnalyticsSedesImagen(),
                 fetchAnalyticsFranquicias(periodo, fechaInicio, fechaFin),
+                fetchAnalyticsFranquiciasConversion(periodo, fechaInicio, fechaFin),
                 fetchAnalyticsDomicilios(periodo, fechaInicio, fechaFin),
                 fetchAnalyticsCandidatos(periodo, fechaInicio, fechaFin)
             ]);
@@ -32,6 +34,7 @@ export const useAnalytics = (session) => {
             setDataPqrsSedes(resPqrsSedes);
             setDataSedesImagen(resSedesImagen);
             setDataFranquicias(resFranquicias);
+            setDataFranquiciasConversion(resFranquiciasConversion);
             setDataDomicilios(resDomicilios);
             setDataCandidatos(resCandidatos);
         } catch (error) {
@@ -71,5 +74,5 @@ export const useAnalytics = (session) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [session, periodo, fechaInicio, fechaFin]);
 
-    return { periodo, setPeriodo, fechaInicio, setFechaInicio, fechaFin, setFechaFin, dataPqrs, dataPqrsMensual, dataPqrsSedes, dataSedesImagen, dataFranquicias, dataDomicilios, dataCandidatos, cargando, cargarAnaliticas };
+    return { periodo, setPeriodo, fechaInicio, setFechaInicio, fechaFin, setFechaFin, dataPqrs, dataPqrsMensual, dataPqrsSedes, dataSedesImagen, dataFranquicias, dataFranquiciasConversion, dataDomicilios, dataCandidatos, cargando, cargarAnaliticas };
 };

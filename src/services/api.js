@@ -132,6 +132,14 @@ export const fetchAnalyticsFranquicias = async (periodo, fechaInicio, fechaFin) 
   return respuesta.data;
 };
 
+export const fetchAnalyticsFranquiciasConversion = async (periodo, fechaInicio, fechaFin) => {
+  const params = new URLSearchParams({ periodo });
+  if (fechaInicio) params.append('fecha_inicio', fechaInicio);
+  if (fechaFin) params.append('fecha_fin', fechaFin);
+  const respuesta = await axios.get(`${API_URL}/analytics/franquicias/conversion?${params.toString()}`);
+  return respuesta.data;
+};
+
 export const fetchAnalyticsDomicilios = async (periodo, fechaInicio, fechaFin) => {
   const params = new URLSearchParams({ periodo });
   if (fechaInicio) params.append('fecha_inicio', fechaInicio);
