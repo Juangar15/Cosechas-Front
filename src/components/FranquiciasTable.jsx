@@ -25,37 +25,38 @@ const calcularSLA = (fechaCreacion, estado) => {
 };
 
 const FranquiciasTable = ({ franquicias, cargando, total, page, pageSize, search, estado, fechaInicio, fechaFin, orden, setPage, setPageSize, setSearch, setEstado, setFechaInicio, setFechaFin, setOrden, handleCambiarEstado }) => {
-    const [ticketAResolver, setTicketAResolver] = useState(null);
     const [mostrarFiltrosAvanzados, setMostrarFiltrosAvanzados] = useState(false);
     const [exportando, setExportando] = useState(false);
-    const [notaTexto, setNotaTexto] = useState('');
-    const [nuevoEstadoPendiente, setNuevoEstadoPendiente] = useState('');
-    const [notaVisible, setNotaVisible] = useState(null);
     const [fotoModal, setFotoModal] = useState(null);
+    
+    // CRM States
+    const [crmLeadAbierto, setCrmLeadAbierto] = useState(null);
+    const [nuevaNotaCrm, setNuevaNotaCrm] = useState('');
+    const [estadoCrm, setEstadoCrm] = useState('');
 
-    const onSelectChange = (solicitudId, nuevoEstado) => {
-        if (nuevoEstado === 'Contactado' || nuevoEstado === 'Descartado') {
-            setTicketAResolver(solicitudId);
-            setNuevoEstadoPendiente(nuevoEstado);
-            setNotaTexto('');
-        } else {
-            const loadingToast = toast.loading('Actualizando prospecto...');
-            handleCambiarEstado(solicitudId, nuevoEstado)
-                .then(() => toast.dismiss(loadingToast))
-                .catch(() => toast.dismiss(loadingToast));
+    const historialCrm = useMemo(() => {
+        if (!crmLeadAbierto || !crmLeadAbierto.nota_resolucion) return [];
+        try {
+            const parsed = JSON.parse(crmLeadAbierto.nota_resolucion);
+            return Array.isArray(parsed) ? parsed : [{fecha: "Anterior", nota: crmLeadAbierto.nota_resolucion, autor: "Sistema"}];
+        } catch (e) {
+            return [{fecha: "Anterior", nota: crmLeadAbierto.nota_resolucion, autor: "Sistema"}];
         }
-    };
+    }, [crmLeadAbierto]);
 
-    const confirmarCierre = () => {
-        if (notaTexto.trim() === '') {
-            toast.error('Por favor, ingresa los detalles de la gestión.');
+    const handleGuardarCrm = async () => {
+        if (!nuevaNotaCrm.trim() && estadoCrm === crmLeadAbierto.estado) {
+            toast.error('Agrega una nota o cambia el estado para guardar.');
             return;
         }
         const loadingToast = toast.loading('Guardando gestión...');
-        handleCambiarEstado(ticketAResolver, nuevoEstadoPendiente, notaTexto)
-            .then(() => toast.dismiss(loadingToast))
+        handleCambiarEstado(crmLeadAbierto.id, estadoCrm, nuevaNotaCrm.trim() !== '' ? nuevaNotaCrm : null)
+            .then(() => {
+                toast.dismiss(loadingToast);
+                setCrmLeadAbierto(null);
+                setNuevaNotaCrm('');
+            })
             .catch(() => toast.dismiss(loadingToast));
-        setTicketAResolver(null);
     };
 
     const handleExportar = async () => {
@@ -214,28 +215,25 @@ const FranquiciasTable = ({ franquicias, cargando, total, page, pageSize, search
                 const lead = row.original;
                 return (
                     <div className="flex flex-col items-center gap-1.5 min-w-[100px]">
-                        {lead.estado === 'Pendiente' && (
+                        {(lead.estado === 'Pendiente' || lead.estado === 'Nuevo') && (
                             <span className="inline-flex items-center justify-center gap-1.5 bg-cosechas-rojo/10 text-cosechas-rojo px-2.5 py-1 rounded-full text-[11px] font-bold border border-cosechas-rojo/20 w-full whitespace-nowrap">
-                                <span className="h-1.5 w-1.5 rounded-full bg-cosechas-rojo animate-pulse"></span> Pendiente
+                                <span className="h-1.5 w-1.5 rounded-full bg-cosechas-rojo animate-pulse"></span> Nuevo
                             </span>
                         )}
-                        {lead.estado === 'Contactado' && (
+                        {(lead.estado === 'Contactado' || lead.estado === 'En Negociación') && (
+                            <span className="inline-flex items-center justify-center bg-cosechas-amarillo/20 text-yellow-700 dark:text-yellow-400 px-2.5 py-1 rounded-full text-[11px] font-bold border border-cosechas-amarillo/40 w-full whitespace-nowrap">
+                                💬 En Negociación
+                            </span>
+                        )}
+                        {lead.estado === 'Aprobado' && (
                             <span className="inline-flex items-center justify-center bg-cosechas-verde/10 text-cosechas-verde px-2.5 py-1 rounded-full text-[11px] font-bold border border-cosechas-verde/30 w-full whitespace-nowrap">
-                                ✅ Contactado
+                                🎉 Aprobado
                             </span>
                         )}
                         {lead.estado === 'Descartado' && (
                             <span className="inline-flex items-center justify-center bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2.5 py-1 rounded-full text-[11px] font-bold border border-slate-200 dark:border-slate-600 w-full whitespace-nowrap">
                                 ❌ Descartado
                             </span>
-                        )}
-                        {lead.nota_resolucion && (
-                            <button
-                                onClick={() => setNotaVisible(lead.nota_resolucion)}
-                                className="flex items-center gap-1 text-[10px] bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 font-bold text-slate-600 dark:text-slate-300 transition-colors border border-slate-200 dark:border-slate-600 w-full justify-center"
-                            >
-                                <FileText className="w-3 h-3" /> Ver Gestión
-                            </button>
                         )}
                     </div>
                 );
@@ -248,21 +246,21 @@ const FranquiciasTable = ({ franquicias, cargando, total, page, pageSize, search
                 const lead = row.original;
                 return (
                     <div className="text-right">
-                        <select
-                            value={lead.estado}
-                            onChange={(e) => onSelectChange(lead.id, e.target.value)}
-                            disabled={lead.estado === 'Contactado' || lead.estado === 'Descartado'}
-                            className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs px-2 py-1.5 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-cosechas-verde/50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed w-[115px]"
+                        <button
+                            onClick={() => {
+                                setCrmLeadAbierto(lead);
+                                setEstadoCrm(lead.estado);
+                                setNuevaNotaCrm('');
+                            }}
+                            className="bg-slate-800 text-white dark:bg-white dark:text-slate-900 font-bold text-xs px-3 py-1.5 rounded-lg shadow-sm hover:bg-slate-700 dark:hover:bg-slate-100 transition-all flex items-center justify-center gap-1.5 ml-auto w-[115px]"
                         >
-                            {lead.estado === 'Pendiente' && <option value="Pendiente">🔴 Pendiente</option>}
-                            {lead.estado !== 'Descartado' && <option value="Contactado">✅ {lead.estado === 'Contactado' ? 'Contactado' : 'Contactar'}</option>}
-                            {lead.estado !== 'Contactado' && <option value="Descartado">❌ {lead.estado === 'Descartado' ? 'Descartado' : 'Descartar'}</option>}
-                        </select>
+                            <FileText className="w-3.5 h-3.5" /> Gestionar
+                        </button>
                     </div>
                 );
             }
         }
-    ], []);
+    ], [crmLeadAbierto]);
 
     const table = useReactTable({
         data: franquicias || [],
@@ -467,86 +465,109 @@ const FranquiciasTable = ({ franquicias, cargando, total, page, pageSize, search
                 </div>
             </motion.div>
 
-            {/* MODAL DE REGISTRAR GESTIÓN (Oscuro) */}
+            {/* MODAL CRM LEAD */}
             <AnimatePresence>
-                {ticketAResolver && (
+                {crmLeadAbierto && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+                        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 overflow-y-auto"
+                        onClick={() => setCrmLeadAbierto(null)}
                     >
                         <motion.div
                             initial={{ scale: 0.95, opacity: 0, y: 10 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.95, opacity: 0, y: 10 }}
-                            className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-8 max-w-md w-full border border-slate-200 dark:border-slate-700"
-                        >
-                            <div className="w-12 h-12 bg-cosechas-verde/10 rounded-full flex items-center justify-center mb-4">
-                                <CheckCircle2 className="w-6 h-6 text-cosechas-verde" />
-                            </div>
-                            <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mb-2">Registrar Gestión Comercial</h3>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium leading-relaxed">
-                                Añade los detalles de la llamada, cotización o reunión con este prospecto (ID #{ticketAResolver}).
-                            </p>
-                            <textarea
-                                className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cosechas-verde focus:border-cosechas-verde mb-6 min-h-[120px] shadow-inner transition-all resize-none"
-                                placeholder="Ej: Se le envió cotización formal por correo y se agendó reunión para el viernes..."
-                                value={notaTexto}
-                                onChange={(e) => setNotaTexto(e.target.value)}
-                            ></textarea>
-                            <div className="flex justify-end gap-3">
-                                <button
-                                    onClick={() => setTicketAResolver(null)}
-                                    className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    onClick={confirmarCierre}
-                                    className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-cosechas-verde hover:bg-cosechas-verde/90 shadow-md shadow-cosechas-verde/20 transition-all hover:-translate-y-0.5 active:translate-y-0"
-                                >
-                                    Guardar Gestión
-                                </button>
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* MODAL PARA VER GESTIÓN (Oscuro) */}
-            <AnimatePresence>
-                {notaVisible && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
-                        onClick={() => setNotaVisible(null)}
-                    >
-                        <motion.div
-                            initial={{ scale: 0.95, opacity: 0, y: 10 }}
-                            animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.95, opacity: 0, y: 10 }}
-                            className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-8 max-w-sm w-full border-t-4 border-cosechas-verde"
+                            className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col md:flex-row my-8"
                             onClick={e => e.stopPropagation()}
                         >
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="w-10 h-10 bg-cosechas-verde/10 rounded-full flex items-center justify-center">
-                                    <CheckCircle2 className="w-5 h-5 text-cosechas-verde" />
+                            {/* Panel Izquierdo: Info del Lead */}
+                            <div className="w-full md:w-1/3 bg-slate-50 dark:bg-slate-900/50 p-6 border-r border-slate-200 dark:border-slate-700 flex flex-col gap-4">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="w-10 h-10 bg-cosechas-rojo/10 rounded-full flex items-center justify-center shrink-0">
+                                        <Store className="w-5 h-5 text-cosechas-rojo" />
+                                    </div>
+                                    <h3 className="text-xl font-extrabold text-slate-900 dark:text-white leading-tight">Lead #{crmLeadAbierto.id}</h3>
                                 </div>
-                                <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Detalle de Gestión</h3>
+                                <div className="space-y-4">
+                                    <div>
+                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Nombre Prospecto</p>
+                                        <p className="font-semibold text-slate-800 dark:text-slate-200">{crmLeadAbierto.nombre || 'No especificado'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Contacto</p>
+                                        <p className="font-semibold text-cosechas-verde">{crmLeadAbierto.celular}</p>
+                                        <p className="text-sm text-slate-600 dark:text-slate-400 break-all">{crmLeadAbierto.correo || 'No especificado'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Ubicación de Interés</p>
+                                        <p className="font-semibold text-slate-800 dark:text-slate-200">{crmLeadAbierto.ciudad || 'No especificada'}</p>
+                                        <p className="text-sm text-slate-600 dark:text-slate-400">{crmLeadAbierto.local_identificado || 'Local no especificado'}</p>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-inner">
-                                <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">{notaVisible}</p>
-                            </div>
-                            <div className="mt-6 flex justify-end">
-                                <button
-                                    onClick={() => setNotaVisible(null)}
-                                    className="px-6 py-2.5 bg-slate-100 dark:bg-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors shadow-sm"
-                                >
-                                    Entendido
-                                </button>
+
+                            {/* Panel Derecho: Historial y Formulario */}
+                            <div className="w-full md:w-2/3 p-6 flex flex-col max-h-[80vh]">
+                                <h4 className="font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+                                    <MessageCircle className="w-4 h-4 text-slate-400" /> Historial de Gestión
+                                </h4>
+                                
+                                {/* Timeline */}
+                                <div className="flex-1 overflow-y-auto mb-6 pr-2 space-y-4 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600">
+                                    {historialCrm.length > 0 ? historialCrm.map((h, i) => (
+                                        <div key={i} className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm relative">
+                                            <div className="flex justify-between items-start mb-2">
+                                                <span className="text-xs font-bold text-slate-500">{h.autor || 'Sistema'}</span>
+                                                <span className="text-[10px] bg-slate-100 dark:bg-slate-900 px-2 py-1 rounded font-bold text-slate-500 border border-slate-200 dark:border-slate-700">{h.fecha}</span>
+                                            </div>
+                                            <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">{h.nota}</p>
+                                        </div>
+                                    )) : (
+                                        <div className="text-center text-slate-500 text-sm py-8 italic">No hay notas previas registradas.</div>
+                                    )}
+                                </div>
+
+                                {/* Formulario Nueva Nota */}
+                                <div className="pt-4 border-t border-slate-200 dark:border-slate-700 shrink-0">
+                                    <textarea
+                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cosechas-rojo mb-4 min-h-[80px] transition-all resize-none"
+                                        placeholder="Escribe aquí los detalles de tu nueva llamada, correo o avance..."
+                                        value={nuevaNotaCrm}
+                                        onChange={(e) => setNuevaNotaCrm(e.target.value)}
+                                    ></textarea>
+                                    
+                                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                                        <div className="w-full sm:w-auto">
+                                            <span className="text-xs font-bold text-slate-500 mr-2">Estado del Lead:</span>
+                                            <select
+                                                value={estadoCrm}
+                                                onChange={(e) => setEstadoCrm(e.target.value)}
+                                                className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold text-sm px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-cosechas-rojo w-full sm:w-auto"
+                                            >
+                                                <option value="Nuevo">🔴 Nuevo</option>
+                                                <option value="En Negociación">💬 En Negociación</option>
+                                                <option value="Aprobado">🎉 Aprobado</option>
+                                                <option value="Descartado">❌ Descartado</option>
+                                            </select>
+                                        </div>
+                                        <div className="flex gap-2 w-full sm:w-auto">
+                                            <button
+                                                onClick={() => setCrmLeadAbierto(null)}
+                                                className="flex-1 sm:flex-none px-4 py-2 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                            >
+                                                Cancelar
+                                            </button>
+                                            <button
+                                                onClick={handleGuardarCrm}
+                                                className="flex-1 sm:flex-none px-5 py-2 rounded-xl text-sm font-bold text-white bg-cosechas-rojo hover:bg-red-700 shadow-md shadow-cosechas-rojo/20 transition-all"
+                                            >
+                                                Guardar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </motion.div>
                     </motion.div>
