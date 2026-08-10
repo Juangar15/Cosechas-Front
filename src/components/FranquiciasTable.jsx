@@ -246,17 +246,18 @@ const FranquiciasTable = ({ franquicias, cargando, total, page, pageSize, search
             header: () => <div className="text-right">Acción</div>,
             cell: ({ row }) => {
                 const lead = row.original;
+                const isClosed = lead.estado === 'Aprobado' || lead.estado === 'Descartado';
                 return (
                     <div className="text-right">
                         <button
                             onClick={() => {
                                 setCrmLeadAbierto(lead);
-                                setEstadoCrm(lead.estado);
+                                setEstadoCrm(lead.estado === 'Nuevo' || lead.estado === 'Pendiente' ? 'En Negociación' : lead.estado);
                                 setNuevaNotaCrm('');
                             }}
-                            className="bg-slate-800 text-white dark:bg-white dark:text-slate-900 font-bold text-xs px-3 py-1.5 rounded-lg shadow-sm hover:bg-slate-700 dark:hover:bg-slate-100 transition-all flex items-center justify-center gap-1.5 ml-auto w-[115px]"
+                            className={`${isClosed ? 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400' : 'bg-slate-800 text-white dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100'} font-bold text-xs px-3 py-1.5 rounded-lg shadow-sm transition-all flex items-center justify-center gap-1.5 ml-auto w-[115px]`}
                         >
-                            <FileText className="w-3.5 h-3.5" /> Gestionar
+                            <FileText className="w-3.5 h-3.5" /> {isClosed ? 'Ver Historial' : 'Gestionar'}
                         </button>
                     </div>
                 );
@@ -531,55 +532,56 @@ const FranquiciasTable = ({ franquicias, cargando, total, page, pageSize, search
                                     )}
                                 </div>
 
-                                {/* Formulario Nueva Nota */}
-                                <div className="pt-4 border-t border-slate-200 dark:border-slate-700 shrink-0">
-                                    <textarea
-                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cosechas-rojo mb-4 min-h-[80px] transition-all resize-none"
-                                        placeholder="Escribe aquí los detalles de tu nueva llamada, correo o avance..."
-                                        value={nuevaNotaCrm}
-                                        onChange={(e) => setNuevaNotaCrm(e.target.value)}
-                                    ></textarea>
-                                    
-                                    <div className="flex flex-col gap-4">
-                                        <div className="w-full">
-                                            <span className="text-xs font-bold text-slate-500 mb-2 block">Estado del Lead:</span>
-                                            <div className="flex flex-wrap gap-2">
-                                                {[
-                                                    { id: 'Nuevo', icon: '🔴', label: 'Nuevo' },
-                                                    { id: 'En Negociación', icon: '💬', label: 'En Negociación' },
-                                                    { id: 'Aprobado', icon: '🎉', label: 'Aprobado' },
-                                                    { id: 'Descartado', icon: '❌', label: 'Descartado' }
-                                                ].map(est => (
-                                                    <button
-                                                        key={est.id}
-                                                        onClick={() => setEstadoCrm(est.id)}
-                                                        className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border flex items-center gap-1.5 ${
-                                                            estadoCrm === est.id 
-                                                            ? 'bg-slate-800 text-white border-slate-800 shadow-md transform scale-105' 
-                                                            : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700'
-                                                        }`}
-                                                    >
-                                                        <span>{est.icon}</span> {est.label}
-                                                    </button>
-                                                ))}
+                                {/* Formulario Nueva Nota (Solo si no está cerrado) */}
+                                {crmLeadAbierto.estado !== 'Aprobado' && crmLeadAbierto.estado !== 'Descartado' && (
+                                    <div className="pt-4 border-t border-slate-200 dark:border-slate-700 shrink-0">
+                                        <textarea
+                                            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cosechas-rojo mb-4 min-h-[80px] transition-all resize-none"
+                                            placeholder="Escribe aquí los detalles de tu nueva llamada, correo o avance..."
+                                            value={nuevaNotaCrm}
+                                            onChange={(e) => setNuevaNotaCrm(e.target.value)}
+                                        ></textarea>
+                                        
+                                        <div className="flex flex-col gap-4">
+                                            <div className="w-full">
+                                                <span className="text-xs font-bold text-slate-500 mb-2 block">Estado del Lead:</span>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {[
+                                                        { id: 'En Negociación', icon: '💬', label: 'En Negociación' },
+                                                        { id: 'Aprobado', icon: '🎉', label: 'Aprobado' },
+                                                        { id: 'Descartado', icon: '❌', label: 'Descartado' }
+                                                    ].map(est => (
+                                                        <button
+                                                            key={est.id}
+                                                            onClick={() => setEstadoCrm(est.id)}
+                                                            className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border flex items-center gap-1.5 ${
+                                                                estadoCrm === est.id 
+                                                                ? 'bg-slate-800 text-white border-slate-800 shadow-md transform scale-105' 
+                                                                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700'
+                                                            }`}
+                                                        >
+                                                            <span>{est.icon}</span> {est.label}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-2 justify-end w-full mt-2">
+                                                <button
+                                                    onClick={() => setCrmLeadAbierto(null)}
+                                                    className="px-4 py-2 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                                >
+                                                    Cancelar
+                                                </button>
+                                                <button
+                                                    onClick={handleGuardarCrm}
+                                                    className="px-5 py-2 rounded-xl text-sm font-bold text-white bg-cosechas-rojo hover:bg-red-700 shadow-md shadow-cosechas-rojo/20 transition-all"
+                                                >
+                                                    Guardar
+                                                </button>
                                             </div>
                                         </div>
-                                        <div className="flex gap-2 justify-end w-full mt-2">
-                                            <button
-                                                onClick={() => setCrmLeadAbierto(null)}
-                                                className="px-4 py-2 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                                            >
-                                                Cancelar
-                                            </button>
-                                            <button
-                                                onClick={handleGuardarCrm}
-                                                className="px-5 py-2 rounded-xl text-sm font-bold text-white bg-cosechas-rojo hover:bg-red-700 shadow-md shadow-cosechas-rojo/20 transition-all"
-                                            >
-                                                Guardar
-                                            </button>
-                                        </div>
                                     </div>
-                                </div>
+                                )}
                             </div>
                         </motion.div>
                     </motion.div>
