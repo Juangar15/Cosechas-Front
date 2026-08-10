@@ -544,19 +544,18 @@ const FranquiciasTable = ({ franquicias, cargando, total, page, pageSize, search
                                         
                                         <div className="flex flex-col gap-4">
                                             <div className="w-full">
-                                                <span className="text-xs font-bold text-slate-500 mb-2 block">Estado del Lead:</span>
+                                                <span className="text-xs font-bold text-slate-500 mb-2 block">¿Deseas cerrar el lead? (Opcional)</span>
                                                 <div className="flex flex-wrap gap-2">
                                                     {[
-                                                        { id: 'En Negociación', icon: '💬', label: 'En Negociación' },
-                                                        { id: 'Aprobado', icon: '🎉', label: 'Aprobado' },
-                                                        { id: 'Descartado', icon: '❌', label: 'Descartado' }
+                                                        { id: 'Aprobado', icon: '🎉', label: 'Aprobar Lead', color: 'bg-cosechas-verde text-white' },
+                                                        { id: 'Descartado', icon: '❌', label: 'Descartar Lead', color: 'bg-slate-700 text-white' }
                                                     ].map(est => (
                                                         <button
                                                             key={est.id}
-                                                            onClick={() => setEstadoCrm(est.id)}
+                                                            onClick={() => setEstadoCrm(estadoCrm === est.id ? (crmLeadAbierto.estado === 'Nuevo' || crmLeadAbierto.estado === 'Pendiente' ? 'En Negociación' : crmLeadAbierto.estado) : est.id)}
                                                             className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border flex items-center gap-1.5 ${
                                                                 estadoCrm === est.id 
-                                                                ? 'bg-slate-800 text-white border-slate-800 shadow-md transform scale-105' 
+                                                                ? `${est.color} border-transparent shadow-md transform scale-105` 
                                                                 : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700'
                                                             }`}
                                                         >
@@ -564,6 +563,9 @@ const FranquiciasTable = ({ franquicias, cargando, total, page, pageSize, search
                                                         </button>
                                                     ))}
                                                 </div>
+                                                {estadoCrm !== 'Aprobado' && estadoCrm !== 'Descartado' && (
+                                                    <p className="text-[11px] text-slate-400 mt-2 font-medium italic">* Si solo guardas la nota, el lead continuará en "En Negociación".</p>
+                                                )}
                                             </div>
                                             <div className="flex gap-2 justify-end w-full mt-2">
                                                 <button
