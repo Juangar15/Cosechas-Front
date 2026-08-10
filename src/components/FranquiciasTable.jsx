@@ -74,20 +74,34 @@ const FranquiciasTable = ({ franquicias, cargando, total, page, pageSize, search
                 return;
             }
             
-            exportarAExcel(datosCompletos, 'Reporte_Leads', (lead) => ({
-                ID: lead.id,
-                'Fecha Creación': new Date(lead.fecha_creacion).toLocaleString(),
-                Estado: lead.estado,
-                'Tipo Franquicia': lead.tipo_franquicia || 'N/A',
-                'Nombre': lead.nombre || 'N/A',
-                'Celular': lead.celular,
-                'Correo': lead.correo || 'N/A',
-                'Ciudad': lead.ciudad || 'N/A',
-                'Local Identificado': lead.local_identificado || 'N/A',
-                'Dirección Local': lead.direccion_local || 'N/A',
-                'Involucramiento': lead.involucramiento || 'N/A',
-                'Nota Resolucion': lead.nota_resolucion || 'N/A'
-            }));
+            exportarAExcel(datosCompletos, 'Reporte_Leads', (lead) => {
+                let historialTexto = lead.nota_resolucion || 'N/A';
+                if (historialTexto !== 'N/A') {
+                    try {
+                        const historialArray = JSON.parse(historialTexto);
+                        if (Array.isArray(historialArray)) {
+                            historialTexto = historialArray.map(n => `[${n.fecha}] ${n.autor}:\n${n.nota}`).join('\n\n---\n\n');
+                        }
+                    } catch (e) {
+                        // Si falla, se deja como texto original
+                    }
+                }
+                
+                return {
+                    ID: lead.id,
+                    'Fecha Creación': new Date(lead.fecha_creacion).toLocaleString(),
+                    Estado: lead.estado,
+                    'Tipo Franquicia': lead.tipo_franquicia || 'N/A',
+                    'Nombre': lead.nombre || 'N/A',
+                    'Celular': lead.celular,
+                    'Correo': lead.correo || 'N/A',
+                    'Ciudad': lead.ciudad || 'N/A',
+                    'Local Identificado': lead.local_identificado || 'N/A',
+                    'Dirección Local': lead.direccion_local || 'N/A',
+                    'Involucramiento': lead.involucramiento || 'N/A',
+                    'Historial de Gestión': historialTexto
+                };
+            });
             
             toast.success(`Se exportaron ${datosCompletos.length} prospectos.`, { id: toastId });
         } catch (error) {
