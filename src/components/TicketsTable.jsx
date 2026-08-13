@@ -97,8 +97,16 @@ const TicketsTable = ({ tickets, cargando, total, page, pageSize, search, estado
     if (nuevoEstado === 'Cerrado') {
       const ticket = ticketsProcesados.find(t => t.id === ticketId);
       if (ticket && ticket.nombre_franquicia === 'Punto de venta no identificado') {
-        toast.error('Debes asignar una sede antes de poder resolver este PQRS.');
-        return;
+        
+        // Excepciones donde no es obligatorio tener una sede asignada
+        const categoriasExcepcion = ['otros', 'alianza', 'sugerencia', 'felicitacion'];
+        const textoCompleto = `${ticket.tipo_reporte || ''} ${ticket.motivo || ''} ${ticket.tipo_novedad || ''}`.toLowerCase();
+        const esExcepcion = categoriasExcepcion.some(keyword => textoCompleto.includes(keyword));
+
+        if (!esExcepcion) {
+          toast.error('Debes asignar una sede antes de poder resolver este PQRS (a menos que sea Alianza u Otros).');
+          return;
+        }
       }
       setTicketAResolver(ticketId);
       setNotaTexto('');
